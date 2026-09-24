@@ -1,5 +1,5 @@
 // ===================================================================
-// GoalQuest - Master Application Logic & State Sync Engine
+// GoalQuest - Master Application Logic & Real-Time Sync Engine
 // ===================================================================
 
 const DEFAULT_STATE = {
@@ -48,16 +48,17 @@ const DEFAULT_STATE = {
     { id: 't-5', title: '💧 Drank 2.5L water & kept disciplined mindset', category: 'habit', completed: false, date: '' }
   ],
   streak: 3,
-  syncRoom: 'GOAL-' + Math.floor(1000 + Math.random() * 9000),
-  lastSync: null
+  syncRoom: 'GOAL-2341',
+  lastUpdated: Date.now()
 };
 
 // Current App State
 let appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let selectedDateStr = new Date().toISOString().split('T')[0];
+let isSyncing = false;
 
 // ===================================================================
-// AUDIO SYNTHESIZER (Pleasant Chimes using Web Audio API)
+// AUDIO SYNTHESIZER
 // ===================================================================
 let audioCtx = null;
 
@@ -81,24 +82,22 @@ function playTickSound() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
     gain.gain.setValueAtTime(0.15, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.18);
-  } catch (e) {
-    console.debug('Audio error:', e);
-  }
+  } catch (e) {}
 }
 
 function playAllDoneFanfare() {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -112,22 +111,65 @@ function playAllDoneFanfare() {
       osc.start(startTime);
       osc.stop(startTime + 0.25);
     });
-  } catch (e) {
-    console.debug('Audio fanfare error:', e);
-  }
+  } catch (e) {}
 }
 
 // ===================================================================
-// INITIALIZATION & STORAGE
+// INITIALIZATION & URL HANDLING
 // ===================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   loadLocalState();
-  checkForUrlDataPayload();
+  handleUrlRoomAndData();
   renderApp();
-  initCloudSync();
+  initSyncInput();
   lucide.createIcons();
+
+  // Initial pull from cloud
+  await pullFromCloud();
+
+  // Setup auto-polling every 8 seconds
+  setInterval(() => {
+    if (!document.hidden && !isSyncing) {
+      pullFromCloud(true);
+    }
+  }, 8000);
+
+  // Poll on tab refocus
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      pullFromCloud(true);
+    }
+  });
 });
+
+function handleUrlRoomAndData() {
+  const params = new URLSearchParams(window.location.search);
+  const roomParam = params.get('room');
+  if (roomParam) {
+    appState.syncRoom = roomParam.toUpperCase().trim();
+    saveLocalState(false);
+  }
+
+  // Check for hash data payload (instant migration)
+  const hash = window.location.hash;
+  if (hash && hash.includes('import=')) {
+    try {
+      const rawMatch = hash.match(/import=([^&]*)/);
+      if (rawMatch && rawMatch[1]) {
+        const decoded = JSON.parse(decodeURIComponent(rawMatch[1]));
+        if (decoded.totalSaved !== undefined) {
+          appState = { ...appState, ...decoded };
+          saveLocalState(true);
+          // Clean URL
+          window.history.replaceState(null, '', window.location.pathname + (roomParam ? `?room=${roomParam}` : ''));
+        }
+      }
+    } catch (e) {
+      console.error('URL import error:', e);
+    }
+  }
+}
 
 function loadLocalState() {
   try {
@@ -135,7 +177,6 @@ function loadLocalState() {
     if (saved) {
       const parsed = JSON.parse(saved);
       appState = { ...DEFAULT_STATE, ...parsed };
-      // Merge goals safely
       appState.goals = { ...DEFAULT_STATE.goals, ...(parsed.goals || {}) };
     }
   } catch (e) {
@@ -143,17 +184,176 @@ function loadLocalState() {
   }
 }
 
-function saveLocalState() {
+function saveLocalState(triggerCloudPush = true) {
   try {
+    appState.lastUpdated = Date.now();
     localStorage.setItem('goalquest_state', JSON.stringify(appState));
-    syncToCloudDebounced();
+    if (triggerCloudPush) {
+      syncToCloudDebounced();
+    }
   } catch (e) {
     console.error('Failed to save state:', e);
   }
 }
 
 // ===================================================================
-// RENDERING FUNCTIONS
+// CLOUD SYNC ENGINE (GET & POST)
+// ===================================================================
+
+let syncDebounceTimer = null;
+function syncToCloudDebounced() {
+  clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(() => {
+    pushToCloud();
+  }, 1000);
+}
+
+function updateSyncUI(status, message) {
+  const dot = document.getElementById('syncStatusDot');
+  const text = document.getElementById('syncStatusText');
+  if (!dot || !text) return;
+
+  switch (status) {
+    case 'syncing':
+      dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-spin';
+      text.textContent = 'Syncing...';
+      break;
+    case 'synced':
+      dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse';
+      text.textContent = `Cloud Synced (${appState.syncRoom})`;
+      break;
+    case 'missing_api':
+      dot.className = 'w-2 h-2 rounded-full bg-rose-500 animate-ping';
+      text.textContent = 'Upload api/sync.js to GitHub';
+      break;
+    case 'missing_kv':
+      dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+      text.textContent = 'Connect KV in Vercel Storage';
+      break;
+    case 'local':
+    default:
+      dot.className = 'w-2 h-2 rounded-full bg-indigo-400';
+      text.textContent = `Local (${appState.syncRoom})`;
+      break;
+  }
+}
+
+async function pullFromCloud(silent = false) {
+  if (isSyncing) return;
+  const room = appState.syncRoom || 'GOAL-2341';
+  if (!silent) updateSyncUI('syncing');
+
+  try {
+    const res = await fetch(`/api/sync?room=${room}`);
+    
+    // If the api folder was not uploaded to GitHub:
+    if (res.status === 404) {
+      updateSyncUI('missing_api');
+      return;
+    }
+
+    const json = await res.json();
+
+    if (!json.configured) {
+      updateSyncUI('missing_kv');
+      return;
+    }
+
+    if (json.success && json.data) {
+      const cloudData = json.data;
+      // Only overwrite if cloud data is newer or has transactions
+      if (cloudData.lastUpdated && cloudData.lastUpdated > (appState.lastUpdated || 0)) {
+        appState = { ...DEFAULT_STATE, ...cloudData };
+        appState.goals = { ...DEFAULT_STATE.goals, ...(cloudData.goals || {}) };
+        localStorage.setItem('goalquest_state', JSON.stringify(appState));
+        renderApp();
+      }
+      updateSyncUI('synced');
+    } else {
+      // Room is empty on cloud, push our local state to initialize it!
+      pushToCloud();
+    }
+  } catch (err) {
+    if (!silent) updateSyncUI('local');
+  }
+}
+
+async function pushToCloud() {
+  if (isSyncing) return;
+  isSyncing = true;
+  updateSyncUI('syncing');
+
+  const room = appState.syncRoom || 'GOAL-2341';
+  appState.lastUpdated = Date.now();
+
+  try {
+    const res = await fetch(`/api/sync?room=${room}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: appState, room: room })
+    });
+
+    if (res.status === 404) {
+      updateSyncUI('missing_api');
+      isSyncing = false;
+      return;
+    }
+
+    const json = await res.json();
+    if (!json.configured) {
+      updateSyncUI('missing_kv');
+    } else if (json.success) {
+      updateSyncUI('synced');
+    } else {
+      updateSyncUI('local');
+    }
+  } catch (err) {
+    updateSyncUI('local');
+  } finally {
+    isSyncing = false;
+  }
+}
+
+async function saveSyncRoomCode() {
+  const input = document.getElementById('syncRoomInput');
+  const code = input.value.trim().toUpperCase();
+  if (!code) return;
+
+  appState.syncRoom = code;
+  saveLocalState(false);
+  
+  // Try to pull data from this room first!
+  updateSyncUI('syncing');
+  try {
+    const res = await fetch(`/api/sync?room=${code}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) {
+        appState = { ...DEFAULT_STATE, ...json.data };
+        appState.syncRoom = code;
+        saveLocalState(false);
+        renderApp();
+        alert(`🎉 Connected to Room "${code}"! Latest cloud progress loaded.`);
+        updateSyncUI('synced');
+        return;
+      }
+    }
+  } catch (e) {}
+
+  // If no data in cloud room, push current data
+  await pushToCloud();
+  alert(`Room code set to "${code}". Now enter "${code}" on your other device!`);
+}
+
+function initSyncInput() {
+  const roomInput = document.getElementById('syncRoomInput');
+  if (roomInput && appState.syncRoom) {
+    roomInput.value = appState.syncRoom;
+  }
+}
+
+// ===================================================================
+// RENDERING
 // ===================================================================
 
 function formatMoney(amount) {
@@ -207,7 +407,6 @@ function renderActiveGoalHero() {
   const bar = document.getElementById('activeProgressBar');
   bar.style.width = `${pct}%`;
 
-  // Color theme dynamically
   if (goalKey === 'goa') {
     bar.className = 'h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 transition-all duration-700 relative shimmer-bar';
   } else if (goalKey === 'iphone') {
@@ -216,7 +415,6 @@ function renderActiveGoalHero() {
     bar.className = 'h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 transition-all duration-700 relative shimmer-bar';
   }
 
-  // Target Deadline
   if (goal.deadline) {
     const diffDays = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
     document.getElementById('deadlineBadge').textContent = diffDays > 0 ? `Target: ${diffDays} Days Left` : 'Target Date Reached!';
@@ -269,7 +467,6 @@ function renderTransactionsList() {
     return;
   }
 
-  // Reverse copy so newest is first
   const list = [...appState.transactions].reverse();
   container.innerHTML = list.map(tx => `
     <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition">
@@ -365,22 +562,19 @@ function updatePaceCalculations() {
 
   const remaining = Math.max(0, goal.target - (appState.totalSaved || 0));
 
-  // Pace for 60 days
   const daily60 = Math.ceil(remaining / 60);
   document.getElementById('paceDaily60').textContent = `${formatMoney(daily60)} / day`;
 
-  // Pace for 90 days weekly
   const weekly90 = Math.ceil(remaining / (90 / 7));
   document.getElementById('paceWeekly').textContent = `${formatMoney(weekly90)} / week`;
 
-  // Current estimated days left assuming ~₹500/day
   const avgDailyPace = 500;
   const daysLeft = Math.ceil(remaining / avgDailyPace);
   document.getElementById('currentPaceText').textContent = remaining === 0 ? 'Goal Met! 🎉' : `~${daysLeft} days (at ₹500/d)`;
 }
 
 // ===================================================================
-// USER ACTIONS (TICK, ADD TASK, DEPOSIT)
+// USER ACTIONS
 // ===================================================================
 
 function toggleTask(index) {
@@ -392,7 +586,6 @@ function toggleTask(index) {
     playTickSound();
   }
 
-  // Check if all are completed
   const allDone = appState.tasks.every(t => t.completed);
   if (allDone && appState.tasks.length > 0) {
     playAllDoneFanfare();
@@ -444,7 +637,6 @@ function setActiveGoal(goalKey) {
   saveLocalState();
   renderApp();
 
-  // Subtle confetti when picking active goal
   confetti({
     particleCount: 30,
     spread: 50,
@@ -476,7 +668,6 @@ function handleDepositSubmit(e) {
   if (!appState.transactions) appState.transactions = [];
   appState.transactions.push(newTx);
 
-  // Check if reached milestone or 100%
   const activeGoal = appState.goals[appState.activeGoal];
   if (activeGoal && appState.totalSaved >= activeGoal.target) {
     playAllDoneFanfare();
@@ -517,16 +708,11 @@ function toggleCurrency() {
   renderApp();
 }
 
-// ===================================================================
-// TAB SWITCHING
-// ===================================================================
-
 function switchTab(tabId) {
   document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
   const target = document.getElementById(`tab-${tabId}`);
   if (target) target.classList.remove('hidden');
 
-  // Update desktop tabs
   document.querySelectorAll('.nav-tab').forEach(btn => {
     btn.className = 'nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-gray-400 hover:text-gray-200 hover:bg-white/5';
   });
@@ -535,7 +721,6 @@ function switchTab(tabId) {
     activeBtn.className = 'nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-indigo-600/20 text-indigo-300 border border-indigo-500/30';
   }
 
-  // Update mobile bottom bar
   const navKeys = ['tracker', 'planner', 'battle', 'blueprints', 'sync'];
   navKeys.forEach(k => {
     const el = document.getElementById(`mobile-nav-${k}`);
@@ -551,7 +736,6 @@ function switchTab(tabId) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Date Changer
 function changeDate(delta) {
   const current = new Date(selectedDateStr);
   current.setDate(current.getDate() + delta);
@@ -564,10 +748,7 @@ function goToToday() {
   renderDailyPlanner();
 }
 
-// ===================================================================
-// MODALS MANAGEMENT
-// ===================================================================
-
+// Modals
 function openDepositModal() {
   document.getElementById('depositModal').classList.remove('hidden');
   document.getElementById('depositModal').classList.add('flex');
@@ -625,25 +806,23 @@ function openSyncModal() {
   switchTab('sync');
 }
 
-// ===================================================================
-// CROSS-DEVICE SYNC & QR CODE ENGINE
-// ===================================================================
-
 function generateSyncQRCode() {
   try {
     const canvas = document.getElementById('qrCanvas');
     if (!canvas) return;
 
-    // Build URL with compressed state or room code
     const baseUrl = window.location.origin + window.location.pathname;
     const minimalState = {
       activeGoal: appState.activeGoal,
       totalSaved: appState.totalSaved,
       currency: appState.currency,
+      tasks: appState.tasks,
+      transactions: appState.transactions,
       syncRoom: appState.syncRoom
     };
     const encoded = encodeURIComponent(JSON.stringify(minimalState));
-    const mobileUrl = `${baseUrl}#import=${encoded}`;
+    // Embed both room code AND data fallback
+    const mobileUrl = `${baseUrl}?room=${appState.syncRoom}#import=${encoded}`;
 
     new QRious({
       element: canvas,
@@ -664,10 +843,12 @@ function copyMobileSyncLink() {
     activeGoal: appState.activeGoal,
     totalSaved: appState.totalSaved,
     currency: appState.currency,
+    tasks: appState.tasks,
+    transactions: appState.transactions,
     syncRoom: appState.syncRoom
   };
   const encoded = encodeURIComponent(JSON.stringify(minimalState));
-  const mobileUrl = `${baseUrl}#import=${encoded}`;
+  const mobileUrl = `${baseUrl}?room=${appState.syncRoom}#import=${encoded}`;
 
   navigator.clipboard.writeText(mobileUrl).then(() => {
     const btnText = document.getElementById('copyLinkBtnText');
@@ -678,87 +859,6 @@ function copyMobileSyncLink() {
   });
 }
 
-function checkForUrlDataPayload() {
-  const hash = window.location.hash;
-  if (hash && hash.startsWith('#import=')) {
-    try {
-      const raw = decodeURIComponent(hash.substring(8));
-      const imported = JSON.parse(raw);
-      if (confirm('📲 Found GoalQuest progress transferred from your other device! Do you want to load it now?')) {
-        appState.activeGoal = imported.activeGoal || appState.activeGoal;
-        appState.totalSaved = imported.totalSaved || appState.totalSaved;
-        appState.currency = imported.currency || appState.currency;
-        if (imported.syncRoom) appState.syncRoom = imported.syncRoom;
-        saveLocalState();
-        // Clear hash cleanly
-        window.history.replaceState(null, '', window.location.pathname);
-      }
-    } catch (e) {
-      console.error('Failed to parse URL import data:', e);
-    }
-  }
-}
-
-// Room Code Auto-Sync
-let syncDebounceTimer = null;
-
-function syncToCloudDebounced() {
-  clearTimeout(syncDebounceTimer);
-  syncDebounceTimer = setTimeout(() => {
-    triggerManualSync();
-  }, 1200);
-}
-
-async function triggerManualSync() {
-  const dot = document.getElementById('syncStatusDot');
-  const text = document.getElementById('syncStatusText');
-  if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-spin';
-  if (text) text.textContent = 'Syncing...';
-
-  try {
-    const room = appState.syncRoom || 'DEFAULT_ROOM';
-    // Call our serverless Vercel function
-    const res = await fetch(`/api/sync?room=${room}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: appState })
-    });
-
-    if (res.ok) {
-      if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse';
-      if (text) text.textContent = 'Cloud Synced';
-      appState.lastSync = new Date().toISOString();
-    } else {
-      // Fallback
-      if (dot) dot.className = 'w-2 h-2 rounded-full bg-indigo-400';
-      if (text) text.textContent = 'Local Ready';
-    }
-  } catch (err) {
-    // If running offline or without serverless backend
-    if (dot) dot.className = 'w-2 h-2 rounded-full bg-indigo-400';
-    if (text) text.textContent = 'Local Storage';
-  }
-}
-
-function saveSyncRoomCode() {
-  const input = document.getElementById('syncRoomInput');
-  const code = input.value.trim().toUpperCase();
-  if (!code) return;
-
-  appState.syncRoom = code;
-  saveLocalState();
-  alert(`Room code set to "${code}". Enter this exact code on your phone to link them!`);
-  triggerManualSync();
-}
-
-function initCloudSync() {
-  const roomInput = document.getElementById('syncRoomInput');
-  if (roomInput && appState.syncRoom) {
-    roomInput.value = appState.syncRoom;
-  }
-}
-
-// Data Export & Import
 function exportDataJson() {
   const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -787,10 +887,6 @@ function importDataJson(e) {
   };
   reader.readAsText(file);
 }
-
-// ===================================================================
-// QUIZ & BLUEPRINT HELPERS
-// ===================================================================
 
 function runQuizRecommendation(choice) {
   const box = document.getElementById('quizResultBox');
