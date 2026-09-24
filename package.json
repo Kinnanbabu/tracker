@@ -1,0 +1,20 @@
+{
+  "name": "goal-quest-planner",
+  "version": "1.0.0",
+  "description": "Daily Planner, Savings Tracker & Decision Engine for iPhone vs MacBook vs Goa Trip - Deployable on Vercel",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000",
+    "serve": "npx serve ."
+  },
+  "keywords": [
+    "vercel",
+    "daily-planner",
+    "savings-tracker",
+    "iphone",
+    "macbook-pro",
+    "goa-trip"
+  ],
+  "author": "",
+  "license": "MIT"
+}
