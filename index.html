@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Mission 80K — Advanced 3-Day Habit & Goal Tracker</title>
+  <title>Mission 80K — Financial Target & To-Do List</title>
   
   <!-- Web App & Mobile Optimization -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Mission 80K">
   <meta name="theme-color" content="#f8fafc">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -38,7 +38,7 @@
 <body class="bg-[#f8fafc] text-slate-800 min-h-screen flex flex-col antialiased">
 
   <!-- ================================================================= -->
-  <!-- PROFILE SELECTOR OVERLAY (Clean, Humane, Friendly)               -->
+  <!-- PROFILE SELECTOR OVERLAY (Clean, Friendly)                        -->
   <!-- ================================================================= -->
   <div id="profileGateScreen" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex flex-col justify-center items-center p-4 sm:p-6 transition-opacity duration-300">
     <div class="bg-white rounded-3xl p-6 sm:p-10 max-w-xl w-full shadow-2xl border border-slate-100 space-y-6">
@@ -51,7 +51,7 @@
           Who's tracking today?
         </h2>
         <p class="text-xs sm:text-sm text-slate-500">
-          Pick your profile to log your 3-day habits and track your ₹80,000 goal.
+          Pick your profile to track savings towards ₹80,000 and check off tasks.
         </p>
       </div>
 
@@ -103,7 +103,7 @@
       </div>
 
       <div class="pt-2 text-center text-xs text-slate-400">
-        Changes automatically sync to Upstash Cloud across laptop and phone.
+        Syncs automatically to Upstash Cloud across laptop and phone.
       </div>
 
     </div>
@@ -162,100 +162,15 @@
   <!-- ================================================================= -->
   <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
 
-    <!-- 1. ADVANCED 3-DAY HABIT TRACKER (HERO SECTION) -->
-    <section class="card-human p-6 sm:p-8 space-y-6">
-      
-      <!-- Header & Badges -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Habits & Daily Consistency
-            </h1>
-            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 flex items-center gap-1 font-mono">
-              <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-600"></i>
-              <span id="streakCount">4 Day Streak</span>
-            </span>
-            <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/60" title="Only the last 3 days are stored to keep the app ultra fast">
-              ⚡ 3-Day Rolling Window
-            </span>
-          </div>
-          <p class="text-xs sm:text-sm text-slate-500 mt-1">
-            Track daily discipline across a rolling 3-day window. Tap any day to toggle completion.
-          </p>
-        </div>
-
-        <div class="text-right hidden sm:block">
-          <span class="text-xs text-slate-400 block font-mono">3-Day Consistency</span>
-          <span id="consistencyScoreText" class="text-base font-bold font-mono-nums text-emerald-600">75% consistency</span>
-        </div>
-      </div>
-
-      <!-- 3-Day Legend & Daily Progress Bar -->
-      <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-100 space-y-3">
-        <div class="flex items-center justify-between text-xs text-slate-600 font-medium">
-          <span id="todayCompletionText">1 of 4 completed today (25%)</span>
-          <span class="text-slate-400 text-[11px]">Columns: 2 Days Ago • Yesterday • Today</span>
-        </div>
-        <div class="w-full h-2.5 progress-track bg-slate-200">
-          <div id="todayProgressBar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 25%;"></div>
-        </div>
-      </div>
-
-      <!-- Category Filter Pills -->
-      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-        <button onclick="setHabitFilter('all')" id="filter-all" class="category-filter-btn active">All</button>
-        <button onclick="setHabitFilter('course')" id="filter-course" class="category-filter-btn">📚 Course & Study</button>
-        <button onclick="setHabitFilter('saving')" id="filter-saving" class="category-filter-btn">💰 Money & Savings</button>
-        <button onclick="setHabitFilter('focus')" id="filter-focus" class="category-filter-btn">⚡ Focus & Work</button>
-        <button onclick="setHabitFilter('health')" id="filter-health" class="category-filter-btn">🌿 Health & Routine</button>
-      </div>
-
-      <!-- Add New Habit Input Bar -->
-      <form onsubmit="handleAddNewHabit(event)" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        <div class="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-3 py-1 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 transition">
-          <input 
-            type="text" 
-            id="newHabitTitleInput" 
-            placeholder="Add a new habit (e.g. '18 course', 'Read 20 mins', 'Saved ₹200')..." 
-            class="flex-1 bg-transparent px-2 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none"
-            required
-          >
-          <select id="newHabitCategorySelect" class="bg-slate-50 text-xs text-slate-700 rounded-lg px-2 py-1.5 border border-slate-200 outline-none font-medium">
-            <option value="course">📚 Course</option>
-            <option value="saving">💰 Savings</option>
-            <option value="focus">⚡ Focus</option>
-            <option value="health">🌿 Health</option>
-          </select>
-        </div>
-        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition">
-          <i data-lucide="plus" class="w-4 h-4"></i>
-          <span>Add Habit</span>
-        </button>
-      </form>
-
-      <!-- Advanced 3-Day Habit Matrix Container -->
-      <div class="space-y-2.5 pt-2" id="habitListContainer">
-        <!-- Rendered dynamically with 3-day toggle buttons -->
-      </div>
-
-      <!-- 3-Day Retention Privacy Micro-Notice -->
-      <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
-        <span>🔒 <strong>3-Day Auto-Pruning:</strong> Only the last 3 days of checks are retained. Older data is pruned for speed.</span>
-        <button onclick="markAllTodayDone()" class="text-emerald-600 hover:underline font-medium">Mark all today done</button>
-      </div>
-
-    </section>
-
-    <!-- 2. MISSION 80K SAVINGS & PROGRESS CARD -->
+    <!-- 1. MISSION 80K SAVINGS & PROGRESS (AT THE VERY TOP) -->
     <section class="card-human p-6 sm:p-8 space-y-6">
       
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-2">
-            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Mission 80K
-            </h2>
+            </h1>
             <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
               Financial Target
             </span>
@@ -296,7 +211,7 @@
 
         <div class="flex items-center justify-between text-xs text-slate-500 font-mono-nums pt-1">
           <span id="heroRemainingText">₹64,400 left to reach ₹80,000</span>
-          <span id="currentPaceText" class="text-slate-600 font-medium">~128 days (at ₹500/day)</span>
+          <span id="currentPaceText" class="text-slate-600 font-medium">~129 days (at ₹500/day)</span>
         </div>
       </div>
 
@@ -307,6 +222,63 @@
         <button onclick="quickAddAmount(500)" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-medium transition">+500</button>
         <button onclick="quickAddAmount(1000)" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-medium transition">+1,000</button>
         <button onclick="quickAddAmount(5000)" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-mono font-medium transition">+5,000</button>
+      </div>
+
+    </section>
+
+    <!-- 2. SIMPLE TO-DO LIST (BELOW MISSION 80K) -->
+    <section class="card-human p-6 sm:p-8 space-y-6">
+      
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              Daily To-Do List
+            </h2>
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 flex items-center gap-1 font-mono">
+              <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span id="streakCount">4 Day Streak</span>
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            Simple checklist for your daily tasks and courses.
+          </p>
+        </div>
+
+        <div class="text-xs text-slate-500 font-mono" id="todoCompletionBadge">
+          1 of 4 completed (25%)
+        </div>
+      </div>
+
+      <!-- Completion Progress Bar -->
+      <div class="w-full h-2 progress-track bg-slate-100">
+        <div id="todoProgressBar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 25%;"></div>
+      </div>
+
+      <!-- Add New Task Input -->
+      <form onsubmit="handleAddNewTask(event)" class="flex items-center gap-2 pt-1">
+        <input 
+          type="text" 
+          id="newTaskTitleInput" 
+          placeholder="Add a new task (e.g. '18 course', 'Review module')..." 
+          class="flex-1 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+          required
+        >
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs sm:text-sm flex items-center gap-1.5 transition">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Add</span>
+        </button>
+      </form>
+
+      <!-- The Simple To-Do Items List -->
+      <div class="space-y-2.5 pt-1" id="taskListContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-100">
+        <span>⚡ 3-day data saved cleanly in Upstash Cloud</span>
+        <button onclick="clearCompletedTasks()" class="text-slate-500 hover:text-slate-800 underline">Clear finished tasks</button>
       </div>
 
     </section>
@@ -328,12 +300,12 @@
       </div>
     </section>
 
-    <!-- 4. SQUAD OVERVIEW (Clean, Humane Summary of Kinnan, Madhav & Allen Joy) -->
+    <!-- 4. SQUAD OVERVIEW -->
     <section class="card-human p-6 sm:p-8 space-y-4 bg-white/70">
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-base font-bold text-slate-900">All 3 Profiles Overview</h3>
-          <p class="text-xs text-slate-500">Tap any friend to switch and open their 3-day habit tracker.</p>
+          <p class="text-xs text-slate-500">Tap any friend to switch and open their to-do list.</p>
         </div>
         <span class="text-xs font-mono font-medium text-slate-400">Synced to Cloud</span>
       </div>
@@ -346,10 +318,8 @@
   </main>
 
   <!-- ================================================================= -->
-  <!-- MODALS                                                            -->
+  <!-- MODAL: ADD SAVINGS                                                -->
   <!-- ================================================================= -->
-
-  <!-- Modal 1: Add Savings -->
   <div id="depositModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-100 space-y-4">
       <div class="flex items-center justify-between">
@@ -404,46 +374,9 @@
     </div>
   </div>
 
-  <!-- Modal 2: Edit Habit Title -->
-  <div id="editHabitModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-100 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900">Edit Habit</h3>
-        <button onclick="closeEditHabitModal()" class="text-slate-400 hover:text-slate-700">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form onsubmit="handleSaveEditedHabit(event)" class="space-y-4">
-        <input type="hidden" id="editHabitId">
-        <div>
-          <label class="text-xs font-semibold text-slate-600 block mb-1">Habit Title</label>
-          <input type="text" id="editHabitTitle" class="w-full bg-slate-50 text-sm text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-emerald-500" required>
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-600 block mb-1">Category</label>
-          <select id="editHabitCategory" class="w-full bg-slate-50 text-sm text-slate-900 px-3 py-2.5 rounded-xl border border-slate-200 outline-none">
-            <option value="course">📚 Course & Study</option>
-            <option value="saving">💰 Money & Savings</option>
-            <option value="focus">⚡ Focus & Work</option>
-            <option value="health">🌿 Health & Routine</option>
-          </select>
-        </div>
-
-        <div class="flex items-center justify-end gap-2 pt-2">
-          <button type="button" onclick="closeEditHabitModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-500 hover:text-slate-800">
-            Cancel
-          </button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition">
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal 3: Mobile QR -->
+  <!-- ================================================================= -->
+  <!-- MODAL: MOBILE QR CODE                                             -->
+  <!-- ================================================================= -->
   <div id="mobileQRModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-slate-100 space-y-4 text-center">
       <div class="flex items-center justify-between">
@@ -454,7 +387,7 @@
       </div>
 
       <p class="text-xs text-slate-500">
-        Scan this code with your phone camera to view and sync your 3-day habit tracker:
+        Scan this code with your phone camera to view and sync your Mission 80K and tasks:
       </p>
 
       <div class="p-3 bg-white border border-slate-200 rounded-2xl inline-block mx-auto">
@@ -468,7 +401,9 @@
     </div>
   </div>
 
-  <!-- Modal 4: Customize Target -->
+  <!-- ================================================================= -->
+  <!-- MODAL: EDIT TARGET SETTINGS                                       -->
+  <!-- ================================================================= -->
   <div id="goalSettingsModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-100 space-y-4">
       <div class="flex items-center justify-between">
@@ -501,7 +436,9 @@
     </div>
   </div>
 
-  <!-- Modal 5: Sync Settings -->
+  <!-- ================================================================= -->
+  <!-- MODAL: CLOUD SYNC SETTINGS                                        -->
+  <!-- ================================================================= -->
   <div id="syncSettingsModal" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm hidden items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-100 space-y-4">
       <div class="flex items-center justify-between">
@@ -538,7 +475,7 @@
   </div>
 
   <footer class="text-center py-6 text-xs text-slate-400 font-light border-t border-slate-200/60 mt-auto">
-    Mission 80K • Advanced 3-Day Habit Tracker & Goal Tracker
+    Mission 80K • Simple To-Do List & Savings Tracker
   </footer>
 
   <script src="app.js"></script>
