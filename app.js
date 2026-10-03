@@ -1,7 +1,7 @@
 // ===================================================================
-// Mission 80K — Humane & Aesthetic Daily Tracker
-// Clean, Tactile, and Upstash Cloud Synced
-// Profiles: Kinnan, Madhav, Allen Joy
+// Mission 80K — Advanced 3-Day Habit Tracker & Goal Engine
+// Strictly retains only a rolling 3-day window of habit data
+// Inspired by Atomic Habits, Things 3, and Notion
 // ===================================================================
 
 const DEFAULT_PROFILES = {
@@ -18,12 +18,11 @@ const DEFAULT_PROFILES = {
       { id: 'tx-k2', amount: 2600, note: 'Freelance gig payout', date: '2026-09-22' },
       { id: 'tx-k3', amount: 8000, note: 'Monthly savings commitment', date: '2026-09-24' }
     ],
-    tasks: [
-      { id: 'tk-1', title: 'Saved ₹300 today (Skipped takeout & outside coffee)', category: 'saving', completed: true },
-      { id: 'tk-2', title: 'Zero impulse shopping or checkout', category: 'habit', completed: true },
-      { id: 'tk-3', title: '1 Hour dedicated to high-value skill / project', category: 'work', completed: true },
-      { id: 'tk-4', title: 'Researched trade-in values & card cashbacks', category: 'work', completed: false },
-      { id: 'tk-5', title: 'Drank 2.5L water & stayed disciplined', category: 'habit', completed: false }
+    habits: [
+      { id: 'h-1', title: '14 course', category: 'course', history: {} },
+      { id: 'h-2', title: '15 course', category: 'course', history: {} },
+      { id: 'h-3', title: '16 course', category: 'course', history: {} },
+      { id: 'h-4', title: '17 course', category: 'course', history: {} }
     ]
   },
   madhav: {
@@ -39,12 +38,11 @@ const DEFAULT_PROFILES = {
       { id: 'tx-m2', amount: 5000, note: 'Coding client milestone', date: '2026-09-21' },
       { id: 'tx-m3', amount: 7000, note: 'Weekly discipline deposit', date: '2026-09-24' }
     ],
-    tasks: [
-      { id: 'tm-1', title: '2 Hours focused programming work', category: 'work', completed: true },
-      { id: 'tm-2', title: 'Deposited ₹500 into 80K fund', category: 'saving', completed: true },
-      { id: 'tm-3', title: 'Reviewed weekly expenses & saved money', category: 'saving', completed: true },
-      { id: 'tm-4', title: 'No unnecessary online purchases', category: 'habit', completed: false },
-      { id: 'tm-5', title: 'Read 20 pages of tech architecture', category: 'work', completed: false }
+    habits: [
+      { id: 'hm-1', title: '2 Hours focused programming work', category: 'focus', history: {} },
+      { id: 'hm-2', title: 'Deposited ₹500 into 80K fund', category: 'saving', history: {} },
+      { id: 'hm-3', title: 'Read 20 pages of tech architecture', category: 'course', history: {} },
+      { id: 'hm-4', title: 'Zero unneeded online checkouts', category: 'saving', history: {} }
     ]
   },
   allen: {
@@ -60,12 +58,11 @@ const DEFAULT_PROFILES = {
       { id: 'tx-a2', amount: 4500, note: 'Stay allocation', date: '2026-09-22' },
       { id: 'tx-a3', amount: 8000, note: 'Experience pool', date: '2026-09-24' }
     ],
-    tasks: [
-      { id: 'ta-1', title: 'Checked flight fares to Dabolim / Mopa', category: 'work', completed: true },
-      { id: 'ta-2', title: 'Saved ₹400 on daily transport & lunch', category: 'saving', completed: true },
-      { id: 'ta-3', title: 'Planned South Goa stay & scooty route', category: 'work', completed: false },
-      { id: 'ta-4', title: 'Zero weekend impulse dining', category: 'habit', completed: false },
-      { id: 'ta-5', title: 'Morning workout & health focus', category: 'habit', completed: false }
+    habits: [
+      { id: 'ha-1', title: 'Checked flight fares to Dabolim / Mopa', category: 'focus', history: {} },
+      { id: 'ha-2', title: 'Saved ₹400 on daily transport & lunch', category: 'saving', history: {} },
+      { id: 'ha-3', title: 'Planned South Goa stay & scooty route', category: 'focus', history: {} },
+      { id: 'ha-4', title: 'Morning workout & health focus', category: 'health', history: {} }
     ]
   }
 };
@@ -78,11 +75,124 @@ let appState = {
   lastUpdated: Date.now()
 };
 
-let selectedDateStr = new Date().toISOString().split('T')[0];
+let currentHabitFilter = 'all';
 let isSyncing = false;
 
 // ===================================================================
-// AUDIO CHIMES (Subtle & Pleasing)
+// 3-DAY ROLLING WINDOW UTILITIES
+// ===================================================================
+
+// Returns array of exactly the 3 rolling days: [2-days-ago, yesterday, today]
+function getRollingThreeDays() {
+  const dates = [];
+  for (let i = 2; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const isToday = i === 0;
+    const isYesterday = i === 1;
+
+    let dayLabel = isToday ? 'Today' : isYesterday ? 'Yest' : d.toLocaleDateString('en-US', { weekday: 'short' });
+    let shortDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    dates.push({
+      dateStr,
+      dayLabel,
+      shortDate,
+      isToday,
+      isYesterday
+    });
+  }
+  return dates;
+}
+
+// Strictly prunes habit history so ONLY the last 3 days of data are kept!
+function pruneProfileHabitsToThreeDays(profile) {
+  if (!profile || !profile.habits) return;
+  const validDates = getRollingThreeDays().map(d => d.dateStr);
+
+  profile.habits.forEach(habit => {
+    if (!habit.history) habit.history = {};
+    Object.keys(habit.history).forEach(dateKey => {
+      // If older than 2 days ago or not in rolling 3 days, delete immediately!
+      if (!validDates.includes(dateKey)) {
+        delete habit.history[dateKey];
+      }
+    });
+  });
+}
+
+function detectCategory(title, fallback) {
+  const lower = (title || '').toLowerCase();
+  if (lower.includes('course') || lower.includes('study') || lower.includes('read') || lower.includes('learn') || lower.includes('14') || lower.includes('15') || lower.includes('16') || lower.includes('17')) {
+    return 'course';
+  }
+  if (lower.includes('save') || lower.includes('₹') || lower.includes('$') || lower.includes('spend') || lower.includes('budget') || lower.includes('money')) {
+    return 'saving';
+  }
+  if (lower.includes('work') || lower.includes('code') || lower.includes('client') || lower.includes('focus') || lower.includes('project')) {
+    return 'focus';
+  }
+  if (lower.includes('water') || lower.includes('gym') || lower.includes('run') || lower.includes('sleep') || lower.includes('health')) {
+    return 'health';
+  }
+  return fallback || 'focus';
+}
+
+function getCategoryIcon(cat) {
+  switch (cat) {
+    case 'course': return '📚';
+    case 'saving': return '💰';
+    case 'health': return '🌿';
+    default: return '⚡';
+  }
+}
+
+function getCategoryName(cat) {
+  switch (cat) {
+    case 'course': return 'Course';
+    case 'saving': return 'Savings';
+    case 'health': return 'Health';
+    default: return 'Focus';
+  }
+}
+
+// Migrate old `tasks` to advanced 3-day `habits`
+function migrateTasksToHabits(profile) {
+  if (!profile.habits) profile.habits = [];
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  if (profile.tasks && profile.tasks.length > 0) {
+    profile.tasks.forEach(task => {
+      const existing = profile.habits.find(h => h.title.trim().toLowerCase() === task.title.trim().toLowerCase());
+      if (!existing) {
+        profile.habits.push({
+          id: task.id || 'h-' + Date.now() + Math.random().toString(36).substr(2, 4),
+          title: task.title,
+          category: detectCategory(task.title, task.category),
+          history: {
+            [todayStr]: !!task.completed
+          }
+        });
+      } else {
+        if (task.completed) existing.history[todayStr] = true;
+      }
+    });
+  }
+
+  // Ensure default sample habits have today populated if empty
+  profile.habits.forEach(h => {
+    if (!h.history) h.history = {};
+    if (h.history[todayStr] === undefined && (h.title === '14' || h.title.includes('Initial'))) {
+      h.history[todayStr] = true;
+    }
+  });
+
+  pruneProfileHabitsToThreeDays(profile);
+}
+
+// ===================================================================
+// AUDIO CHIMES
 // ===================================================================
 let audioCtx = null;
 function getAudioContext() {
@@ -140,7 +250,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadLocalState();
   handleUrlParams();
 
-  // If a profile was previously picked, hide gate
+  // Migrate all profiles & prune to 3 days
+  Object.values(appState.profiles).forEach(p => migrateTasksToHabits(p));
+
   const savedProfile = localStorage.getItem('goalquest_active_profile');
   if (savedProfile && appState.profiles[savedProfile]) {
     appState.activeProfile = savedProfile;
@@ -151,10 +263,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSyncInput();
   lucide.createIcons();
 
-  // Pull latest multi-profile state from Upstash cloud
   await pullFromCloud();
 
-  // Poll cloud every 8 seconds for multi-device sync
   setInterval(() => {
     if (!document.hidden && !isSyncing) pullFromCloud(true);
   }, 8000);
@@ -172,10 +282,8 @@ function loadLocalState() {
       if (parsed.profiles) {
         appState = { ...appState, ...parsed };
       } else if (parsed.totalSaved !== undefined) {
-        // Migrate old format to Kinnan
         appState.profiles.kinnan.totalSaved = parsed.totalSaved;
         if (parsed.transactions) appState.profiles.kinnan.transactions = parsed.transactions;
-        if (parsed.tasks) appState.profiles.kinnan.tasks = parsed.tasks;
       }
     }
   } catch (e) {
@@ -185,6 +293,9 @@ function loadLocalState() {
 
 function saveLocalState(triggerCloud = true) {
   try {
+    // Enforce 3-day pruning before saving to ensure clean lightweight storage
+    Object.values(appState.profiles).forEach(p => pruneProfileHabitsToThreeDays(p));
+
     appState.lastUpdated = Date.now();
     localStorage.setItem('goalquest_state', JSON.stringify(appState));
     if (triggerCloud) syncToCloudDebounced();
@@ -284,6 +395,10 @@ async function pullFromCloud(silent = false) {
         if (cloudData.profiles) {
           if ((cloudData.lastUpdated || 0) > (appState.lastUpdated || 0)) {
             appState.profiles = cloudData.profiles;
+            Object.values(appState.profiles).forEach(p => {
+              migrateTasksToHabits(p);
+              pruneProfileHabitsToThreeDays(p);
+            });
             appState.lastUpdated = cloudData.lastUpdated;
             localStorage.setItem('goalquest_state', JSON.stringify(appState));
             renderApp();
@@ -305,6 +420,7 @@ async function pushToCloud() {
   updateSyncUI('syncing');
 
   const room = appState.syncRoom || 'GOAL-2341';
+  Object.values(appState.profiles).forEach(p => pruneProfileHabitsToThreeDays(p));
   appState.lastUpdated = Date.now();
 
   try {
@@ -355,8 +471,8 @@ function formatMoney(amount) {
 
 function renderApp() {
   renderNavbar();
-  renderHero();
-  renderPlanner();
+  renderHeroSavings();
+  renderHabitsMatrix();
   renderTransactions();
   renderSquadSummary();
   updateGateSavedValues();
@@ -375,7 +491,7 @@ function renderNavbar() {
   document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = symbol);
 }
 
-function renderHero() {
+function renderHeroSavings() {
   const p = getCurrentProfile();
   const target = p.missionTarget || 80000;
   const saved = p.totalSaved || 0;
@@ -399,46 +515,244 @@ function renderHero() {
     : `~${daysLeft} days (at ₹500/day)`;
 }
 
-function renderPlanner() {
+// ===================================================================
+// ADVANCED 3-DAY HABIT MATRIX RENDERER
+// ===================================================================
+function renderHabitsMatrix() {
   const p = getCurrentProfile();
-  const dateDisplay = document.getElementById('currentDateDisplay');
-  const todayStr = new Date().toISOString().split('T')[0];
-  dateDisplay.textContent = selectedDateStr === todayStr ? 'Today' : selectedDateStr;
+  pruneProfileHabitsToThreeDays(p);
 
-  const container = document.getElementById('taskListContainer');
-  const tasks = p.tasks || [];
-  const completedCount = tasks.filter(t => t.completed).length;
-  const totalCount = tasks.length;
-  const pct = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  const container = document.getElementById('habitListContainer');
+  const rollingDays = getRollingThreeDays(); // [2 days ago, yesterday, today]
+  const todayStr = rollingDays[2].dateStr;
+  const yestStr = rollingDays[1].dateStr;
 
-  document.getElementById('dailyCompletionRatio').textContent = `${completedCount} of ${totalCount} completed (${Math.round(pct)}%)`;
-  document.getElementById('dailyProgressBar').style.width = `${pct}%`;
+  const habits = p.habits || [];
+
+  // Filter habits
+  const filteredHabits = habits.filter(h => {
+    if (currentHabitFilter === 'all') return true;
+    return h.category === currentHabitFilter;
+  });
+
+  // Calculate Metrics
+  const totalHabits = habits.length;
+  const todayDone = habits.filter(h => h.history && h.history[todayStr]).length;
+  const todayPct = totalHabits > 0 ? (todayDone / totalHabits) * 100 : 0;
+
+  document.getElementById('todayCompletionText').textContent = `${todayDone} of ${totalHabits} completed today (${Math.round(todayPct)}%)`;
+  document.getElementById('todayProgressBar').style.width = `${todayPct}%`;
   document.getElementById('streakCount').textContent = `${p.streak || 0} Day Streak`;
 
-  container.innerHTML = tasks.map((task, idx) => {
-    const isDone = task.completed;
+  // 3-Day Consistency Rate
+  let checksPossible = totalHabits * 3;
+  let checksDone = 0;
+  habits.forEach(h => {
+    rollingDays.forEach(d => {
+      if (h.history && h.history[d.dateStr]) checksDone++;
+    });
+  });
+  const consistencyPct = checksPossible > 0 ? Math.round((checksDone / checksPossible) * 100) : 0;
+  document.getElementById('consistencyScoreText').textContent = `${consistencyPct}% consistency`;
+
+  if (filteredHabits.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-8 bg-slate-50 rounded-2xl border border-slate-100 text-slate-400 text-xs">
+        No habits found in this category. Tap "Add Habit" above to create one!
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filteredHabits.map((habit) => {
+    const isTodayDone = habit.history && habit.history[todayStr];
+    const isYestDone = habit.history && habit.history[yestStr];
+    const missedYesterday = !isYestDone && !isTodayDone;
+
+    // Days checks html
+    const daysHtml = rollingDays.map((d) => {
+      const isDone = habit.history && habit.history[d.dateStr];
+      return `
+        <button 
+          onclick="toggleHabitDay('${habit.id}', '${d.dateStr}')" 
+          class="day-btn ${isDone ? 'completed' : ''} ${d.isToday ? 'is-today' : ''}" 
+          title="${d.dayLabel} (${d.shortDate})"
+        >
+          <span class="text-[9px] font-mono font-medium ${d.isToday ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${d.dayLabel}</span>
+          <div class="day-check-icon mt-1">
+            ${isDone ? '✓' : ''}
+          </div>
+        </button>
+      `;
+    }).join('');
+
     return `
-      <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition group ${isDone ? 'opacity-70' : ''}">
-        <div class="flex items-center gap-3 flex-1 min-w-0">
-          <input 
-            type="checkbox" 
-            class="human-tick flex-shrink-0" 
-            ${isDone ? 'checked' : ''} 
-            onchange="toggleTask(${idx})"
-          >
-          <span class="text-sm font-medium ${isDone ? 'task-completed-text' : 'text-slate-800'} truncate">
-            ${escapeHtml(task.title)}
-          </span>
+      <div class="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 transition shadow-sm group">
+        
+        <!-- Left: Icon, Title & Tags -->
+        <div class="flex items-center gap-3 min-w-0 flex-1 pr-2">
+          <span class="text-xl sm:text-2xl flex-shrink-0">${getCategoryIcon(habit.category)}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm sm:text-base font-bold text-slate-900 truncate block">
+                ${escapeHtml(habit.title)}
+              </span>
+              ${missedYesterday ? `
+                <span class="hidden md:inline-block text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/60" title="Atomic Habits: Never miss twice!">
+                  ⚡ Never miss twice
+                </span>
+              ` : ''}
+            </div>
+            <div class="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+              <span class="font-medium text-slate-500">${getCategoryName(habit.category)}</span>
+              <span>•</span>
+              <button onclick="openEditHabitModal('${habit.id}')" class="hover:text-slate-700 underline text-[11px]">Edit</button>
+              <span>•</span>
+              <button onclick="deleteHabit('${habit.id}')" class="hover:text-rose-600 text-[11px]">Delete</button>
+            </div>
+          </div>
         </div>
 
-        <button onclick="deleteTask(${idx})" class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 p-1 transition" title="Delete">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-        </button>
+        <!-- Right: 3-Day Matrix Buttons -->
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          ${daysHtml}
+        </div>
+
       </div>
     `;
   }).join('');
 }
 
+// Toggle completion for a specific habit on a specific day (within the 3-day window)
+function toggleHabitDay(habitId, dateStr) {
+  const p = getCurrentProfile();
+  const habit = p.habits.find(h => h.id === habitId);
+  if (!habit) return;
+
+  if (!habit.history) habit.history = {};
+  habit.history[dateStr] = !habit.history[dateStr];
+
+  if (habit.history[dateStr]) {
+    playTickSound();
+  }
+
+  // Strictly enforce 3-day retention
+  pruneProfileHabitsToThreeDays(p);
+
+  // Check if all habits are completed for today
+  const rollingDays = getRollingThreeDays();
+  const todayStr = rollingDays[2].dateStr;
+  const allTodayDone = p.habits.every(h => h.history && h.history[todayStr]);
+
+  if (allTodayDone && p.habits.length > 0) {
+    playCelebration();
+    confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    p.streak = (p.streak || 0) + 1;
+  }
+
+  saveLocalState();
+  renderHabitsMatrix();
+  lucide.createIcons();
+}
+
+function setHabitFilter(filterKey) {
+  currentHabitFilter = filterKey;
+  document.querySelectorAll('.category-filter-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(`filter-${filterKey}`);
+  if (activeBtn) activeBtn.classList.add('active');
+  renderHabitsMatrix();
+  lucide.createIcons();
+}
+
+function handleAddNewHabit(e) {
+  e.preventDefault();
+  const p = getCurrentProfile();
+  const input = document.getElementById('newHabitTitleInput');
+  const catSelect = document.getElementById('newHabitCategorySelect');
+  const title = input.value.trim();
+  if (!title) return;
+
+  if (!p.habits) p.habits = [];
+
+  const newHabit = {
+    id: 'h-' + Date.now(),
+    title: title,
+    category: catSelect ? catSelect.value : detectCategory(title, 'focus'),
+    history: {}
+  };
+
+  p.habits.push(newHabit);
+  pruneProfileHabitsToThreeDays(p);
+
+  input.value = '';
+  saveLocalState();
+  renderHabitsMatrix();
+  lucide.createIcons();
+}
+
+function markAllTodayDone() {
+  const p = getCurrentProfile();
+  const todayStr = getRollingThreeDays()[2].dateStr;
+  if (!p.habits) return;
+
+  p.habits.forEach(h => {
+    if (!h.history) h.history = {};
+    h.history[todayStr] = true;
+  });
+
+  playCelebration();
+  confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
+  saveLocalState();
+  renderHabitsMatrix();
+  lucide.createIcons();
+}
+
+function deleteHabit(habitId) {
+  const p = getCurrentProfile();
+  p.habits = p.habits.filter(h => h.id !== habitId);
+  saveLocalState();
+  renderHabitsMatrix();
+  lucide.createIcons();
+}
+
+// Edit Habit Modal
+function openEditHabitModal(habitId) {
+  const p = getCurrentProfile();
+  const habit = p.habits.find(h => h.id === habitId);
+  if (!habit) return;
+
+  document.getElementById('editHabitId').value = habit.id;
+  document.getElementById('editHabitTitle').value = habit.title;
+  document.getElementById('editHabitCategory').value = habit.category || 'focus';
+
+  document.getElementById('editHabitModal').classList.remove('hidden');
+  document.getElementById('editHabitModal').classList.add('flex');
+}
+
+function closeEditHabitModal() {
+  document.getElementById('editHabitModal').classList.add('hidden');
+  document.getElementById('editHabitModal').classList.remove('flex');
+}
+
+function handleSaveEditedHabit(e) {
+  e.preventDefault();
+  const p = getCurrentProfile();
+  const id = document.getElementById('editHabitId').value;
+  const habit = p.habits.find(h => h.id === id);
+  if (!habit) return;
+
+  habit.title = document.getElementById('editHabitTitle').value.trim();
+  habit.category = document.getElementById('editHabitCategory').value;
+
+  closeEditHabitModal();
+  saveLocalState();
+  renderHabitsMatrix();
+  lucide.createIcons();
+}
+
+// ===================================================================
+// SAVINGS & SQUAD
+// ===================================================================
 function renderTransactions() {
   const p = getCurrentProfile();
   const container = document.getElementById('transactionsList');
@@ -508,56 +822,6 @@ function renderSquadSummary() {
   }).join('');
 }
 
-// ===================================================================
-// USER ACTIONS
-// ===================================================================
-function toggleTask(index) {
-  const p = getCurrentProfile();
-  const task = p.tasks[index];
-  if (!task) return;
-
-  task.completed = !task.completed;
-  if (task.completed) playTickSound();
-
-  const allDone = p.tasks.every(t => t.completed);
-  if (allDone && p.tasks.length > 0) {
-    playCelebration();
-    confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
-    p.streak = (p.streak || 0) + 1;
-  }
-
-  saveLocalState();
-  renderPlanner();
-  lucide.createIcons();
-}
-
-function handleAddTask(e) {
-  e.preventDefault();
-  const p = getCurrentProfile();
-  const input = document.getElementById('newTaskInput');
-  const title = input.value.trim();
-  if (!title) return;
-
-  p.tasks.push({
-    id: 't-' + Date.now(),
-    title: title,
-    completed: false
-  });
-
-  input.value = '';
-  saveLocalState();
-  renderPlanner();
-  lucide.createIcons();
-}
-
-function deleteTask(index) {
-  const p = getCurrentProfile();
-  p.tasks.splice(index, 1);
-  saveLocalState();
-  renderPlanner();
-  lucide.createIcons();
-}
-
 function quickAddAmount(amt) {
   document.getElementById('depositAmountInput').value = amt;
 }
@@ -612,13 +876,6 @@ function toggleCurrency() {
   appState.currency = appState.currency === 'INR' ? 'USD' : 'INR';
   saveLocalState();
   renderApp();
-}
-
-function changeDate(delta) {
-  const current = new Date(selectedDateStr);
-  current.setDate(current.getDate() + delta);
-  selectedDateStr = current.toISOString().split('T')[0];
-  renderPlanner();
 }
 
 // Modals
