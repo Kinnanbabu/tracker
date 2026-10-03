@@ -1,7 +1,7 @@
 // ===================================================================
-// Mission 80K — Advanced 3-Day Habit Tracker & Goal Engine
-// Strictly retains only a rolling 3-day window of habit data
-// Inspired by Atomic Habits, Things 3, and Notion
+// Mission 80K — Financial Target & Simple Daily To-Do List
+// Clean, Humane, and Upstash Cloud Synced
+// Profiles: Kinnan, Madhav, Allen Joy
 // ===================================================================
 
 const DEFAULT_PROFILES = {
@@ -18,11 +18,11 @@ const DEFAULT_PROFILES = {
       { id: 'tx-k2', amount: 2600, note: 'Freelance gig payout', date: '2026-09-22' },
       { id: 'tx-k3', amount: 8000, note: 'Monthly savings commitment', date: '2026-09-24' }
     ],
-    habits: [
-      { id: 'h-1', title: '14 course', category: 'course', history: {} },
-      { id: 'h-2', title: '15 course', category: 'course', history: {} },
-      { id: 'h-3', title: '16 course', category: 'course', history: {} },
-      { id: 'h-4', title: '17 course', category: 'course', history: {} }
+    tasks: [
+      { id: 'tk-1', title: '14', completed: true, date: '2026-10-03' },
+      { id: 'tk-2', title: '15 course', completed: false, date: '2026-10-03' },
+      { id: 'tk-3', title: '16 course', completed: false, date: '2026-10-03' },
+      { id: 'tk-4', title: '17 course', completed: false, date: '2026-10-03' }
     ]
   },
   madhav: {
@@ -38,11 +38,10 @@ const DEFAULT_PROFILES = {
       { id: 'tx-m2', amount: 5000, note: 'Coding client milestone', date: '2026-09-21' },
       { id: 'tx-m3', amount: 7000, note: 'Weekly discipline deposit', date: '2026-09-24' }
     ],
-    habits: [
-      { id: 'hm-1', title: '2 Hours focused programming work', category: 'focus', history: {} },
-      { id: 'hm-2', title: 'Deposited ₹500 into 80K fund', category: 'saving', history: {} },
-      { id: 'hm-3', title: 'Read 20 pages of tech architecture', category: 'course', history: {} },
-      { id: 'hm-4', title: 'Zero unneeded online checkouts', category: 'saving', history: {} }
+    tasks: [
+      { id: 'tm-1', title: '2 Hours focused programming work', completed: true, date: '2026-10-03' },
+      { id: 'tm-2', title: 'Deposited ₹500 into 80K fund', completed: true, date: '2026-10-03' },
+      { id: 'tm-3', title: 'Read 20 pages of tech architecture', completed: false, date: '2026-10-03' }
     ]
   },
   allen: {
@@ -58,11 +57,10 @@ const DEFAULT_PROFILES = {
       { id: 'tx-a2', amount: 4500, note: 'Stay allocation', date: '2026-09-22' },
       { id: 'tx-a3', amount: 8000, note: 'Experience pool', date: '2026-09-24' }
     ],
-    habits: [
-      { id: 'ha-1', title: 'Checked flight fares to Dabolim / Mopa', category: 'focus', history: {} },
-      { id: 'ha-2', title: 'Saved ₹400 on daily transport & lunch', category: 'saving', history: {} },
-      { id: 'ha-3', title: 'Planned South Goa stay & scooty route', category: 'focus', history: {} },
-      { id: 'ha-4', title: 'Morning workout & health focus', category: 'health', history: {} }
+    tasks: [
+      { id: 'ta-1', title: 'Checked flight fares to Dabolim / Mopa', completed: true, date: '2026-10-03' },
+      { id: 'ta-2', title: 'Saved ₹400 on daily transport & lunch', completed: true, date: '2026-10-03' },
+      { id: 'ta-3', title: 'Planned South Goa stay & scooty route', completed: false, date: '2026-10-03' }
     ]
   }
 };
@@ -75,124 +73,10 @@ let appState = {
   lastUpdated: Date.now()
 };
 
-let currentHabitFilter = 'all';
 let isSyncing = false;
 
 // ===================================================================
-// 3-DAY ROLLING WINDOW UTILITIES
-// ===================================================================
-
-// Returns array of exactly the 3 rolling days: [2-days-ago, yesterday, today]
-function getRollingThreeDays() {
-  const dates = [];
-  for (let i = 2; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    const isToday = i === 0;
-    const isYesterday = i === 1;
-
-    let dayLabel = isToday ? 'Today' : isYesterday ? 'Yest' : d.toLocaleDateString('en-US', { weekday: 'short' });
-    let shortDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-    dates.push({
-      dateStr,
-      dayLabel,
-      shortDate,
-      isToday,
-      isYesterday
-    });
-  }
-  return dates;
-}
-
-// Strictly prunes habit history so ONLY the last 3 days of data are kept!
-function pruneProfileHabitsToThreeDays(profile) {
-  if (!profile || !profile.habits) return;
-  const validDates = getRollingThreeDays().map(d => d.dateStr);
-
-  profile.habits.forEach(habit => {
-    if (!habit.history) habit.history = {};
-    Object.keys(habit.history).forEach(dateKey => {
-      // If older than 2 days ago or not in rolling 3 days, delete immediately!
-      if (!validDates.includes(dateKey)) {
-        delete habit.history[dateKey];
-      }
-    });
-  });
-}
-
-function detectCategory(title, fallback) {
-  const lower = (title || '').toLowerCase();
-  if (lower.includes('course') || lower.includes('study') || lower.includes('read') || lower.includes('learn') || lower.includes('14') || lower.includes('15') || lower.includes('16') || lower.includes('17')) {
-    return 'course';
-  }
-  if (lower.includes('save') || lower.includes('₹') || lower.includes('$') || lower.includes('spend') || lower.includes('budget') || lower.includes('money')) {
-    return 'saving';
-  }
-  if (lower.includes('work') || lower.includes('code') || lower.includes('client') || lower.includes('focus') || lower.includes('project')) {
-    return 'focus';
-  }
-  if (lower.includes('water') || lower.includes('gym') || lower.includes('run') || lower.includes('sleep') || lower.includes('health')) {
-    return 'health';
-  }
-  return fallback || 'focus';
-}
-
-function getCategoryIcon(cat) {
-  switch (cat) {
-    case 'course': return '📚';
-    case 'saving': return '💰';
-    case 'health': return '🌿';
-    default: return '⚡';
-  }
-}
-
-function getCategoryName(cat) {
-  switch (cat) {
-    case 'course': return 'Course';
-    case 'saving': return 'Savings';
-    case 'health': return 'Health';
-    default: return 'Focus';
-  }
-}
-
-// Migrate old `tasks` to advanced 3-day `habits`
-function migrateTasksToHabits(profile) {
-  if (!profile.habits) profile.habits = [];
-  const todayStr = new Date().toISOString().split('T')[0];
-
-  if (profile.tasks && profile.tasks.length > 0) {
-    profile.tasks.forEach(task => {
-      const existing = profile.habits.find(h => h.title.trim().toLowerCase() === task.title.trim().toLowerCase());
-      if (!existing) {
-        profile.habits.push({
-          id: task.id || 'h-' + Date.now() + Math.random().toString(36).substr(2, 4),
-          title: task.title,
-          category: detectCategory(task.title, task.category),
-          history: {
-            [todayStr]: !!task.completed
-          }
-        });
-      } else {
-        if (task.completed) existing.history[todayStr] = true;
-      }
-    });
-  }
-
-  // Ensure default sample habits have today populated if empty
-  profile.habits.forEach(h => {
-    if (!h.history) h.history = {};
-    if (h.history[todayStr] === undefined && (h.title === '14' || h.title.includes('Initial'))) {
-      h.history[todayStr] = true;
-    }
-  });
-
-  pruneProfileHabitsToThreeDays(profile);
-}
-
-// ===================================================================
-// AUDIO CHIMES
+// AUDIO CHIMES (Subtle & Pleasing)
 // ===================================================================
 let audioCtx = null;
 function getAudioContext() {
@@ -244,14 +128,53 @@ function playCelebration() {
 }
 
 // ===================================================================
+// 3-DAY CLEAN PRUNING UTILITY
+// ===================================================================
+function pruneOldTasks(profile) {
+  if (!profile || !profile.tasks) return;
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 3); // 3 days ago
+  const cutoffStr = cutoffDate.toISOString().split('T')[0];
+
+  // Keep all uncompleted tasks, and completed tasks from the last 3 days
+  profile.tasks = profile.tasks.filter(t => {
+    if (!t.completed) return true;
+    if (!t.date) return true;
+    return t.date >= cutoffStr;
+  });
+}
+
+// Convert any legacy habits format back to simple tasks seamlessly
+function ensureTasksFormat(profile) {
+  if (!profile.tasks) profile.tasks = [];
+  if (profile.habits && profile.habits.length > 0) {
+    profile.habits.forEach(h => {
+      const existing = profile.tasks.find(t => t.title.trim().toLowerCase() === h.title.trim().toLowerCase());
+      if (!existing) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const isDoneToday = h.history && h.history[todayStr];
+        profile.tasks.push({
+          id: h.id || 't-' + Date.now() + Math.random().toString(36).substr(2, 4),
+          title: h.title,
+          completed: !!isDoneToday,
+          date: todayStr
+        });
+      }
+    });
+    delete profile.habits;
+  }
+  pruneOldTasks(profile);
+}
+
+// ===================================================================
 // INITIALIZATION
 // ===================================================================
 document.addEventListener('DOMContentLoaded', async () => {
   loadLocalState();
   handleUrlParams();
 
-  // Migrate all profiles & prune to 3 days
-  Object.values(appState.profiles).forEach(p => migrateTasksToHabits(p));
+  // Ensure tasks format & 3-day pruning
+  Object.values(appState.profiles).forEach(p => ensureTasksFormat(p));
 
   const savedProfile = localStorage.getItem('goalquest_active_profile');
   if (savedProfile && appState.profiles[savedProfile]) {
@@ -293,9 +216,7 @@ function loadLocalState() {
 
 function saveLocalState(triggerCloud = true) {
   try {
-    // Enforce 3-day pruning before saving to ensure clean lightweight storage
-    Object.values(appState.profiles).forEach(p => pruneProfileHabitsToThreeDays(p));
-
+    Object.values(appState.profiles).forEach(p => pruneOldTasks(p));
     appState.lastUpdated = Date.now();
     localStorage.setItem('goalquest_state', JSON.stringify(appState));
     if (triggerCloud) syncToCloudDebounced();
@@ -395,10 +316,7 @@ async function pullFromCloud(silent = false) {
         if (cloudData.profiles) {
           if ((cloudData.lastUpdated || 0) > (appState.lastUpdated || 0)) {
             appState.profiles = cloudData.profiles;
-            Object.values(appState.profiles).forEach(p => {
-              migrateTasksToHabits(p);
-              pruneProfileHabitsToThreeDays(p);
-            });
+            Object.values(appState.profiles).forEach(p => ensureTasksFormat(p));
             appState.lastUpdated = cloudData.lastUpdated;
             localStorage.setItem('goalquest_state', JSON.stringify(appState));
             renderApp();
@@ -420,7 +338,7 @@ async function pushToCloud() {
   updateSyncUI('syncing');
 
   const room = appState.syncRoom || 'GOAL-2341';
-  Object.values(appState.profiles).forEach(p => pruneProfileHabitsToThreeDays(p));
+  Object.values(appState.profiles).forEach(p => pruneOldTasks(p));
   appState.lastUpdated = Date.now();
 
   try {
@@ -472,7 +390,7 @@ function formatMoney(amount) {
 function renderApp() {
   renderNavbar();
   renderHeroSavings();
-  renderHabitsMatrix();
+  renderTodoList();
   renderTransactions();
   renderSquadSummary();
   updateGateSavedValues();
@@ -491,6 +409,7 @@ function renderNavbar() {
   document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = symbol);
 }
 
+// 1. Mission 80K Financial Target Hero (AT THE TOP)
 function renderHeroSavings() {
   const p = getCurrentProfile();
   const target = p.missionTarget || 80000;
@@ -515,238 +434,113 @@ function renderHeroSavings() {
     : `~${daysLeft} days (at ₹500/day)`;
 }
 
-// ===================================================================
-// ADVANCED 3-DAY HABIT MATRIX RENDERER
-// ===================================================================
-function renderHabitsMatrix() {
+// 2. Simple Daily To-Do List (BELOW MISSION 80K)
+function renderTodoList() {
   const p = getCurrentProfile();
-  pruneProfileHabitsToThreeDays(p);
+  ensureTasksFormat(p);
 
-  const container = document.getElementById('habitListContainer');
-  const rollingDays = getRollingThreeDays(); // [2 days ago, yesterday, today]
-  const todayStr = rollingDays[2].dateStr;
-  const yestStr = rollingDays[1].dateStr;
+  const container = document.getElementById('taskListContainer');
+  const tasks = p.tasks || [];
+  const completedCount = tasks.filter(t => t.completed).length;
+  const totalCount = tasks.length;
+  const pct = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
-  const habits = p.habits || [];
-
-  // Filter habits
-  const filteredHabits = habits.filter(h => {
-    if (currentHabitFilter === 'all') return true;
-    return h.category === currentHabitFilter;
-  });
-
-  // Calculate Metrics
-  const totalHabits = habits.length;
-  const todayDone = habits.filter(h => h.history && h.history[todayStr]).length;
-  const todayPct = totalHabits > 0 ? (todayDone / totalHabits) * 100 : 0;
-
-  document.getElementById('todayCompletionText').textContent = `${todayDone} of ${totalHabits} completed today (${Math.round(todayPct)}%)`;
-  document.getElementById('todayProgressBar').style.width = `${todayPct}%`;
+  document.getElementById('todoCompletionBadge').textContent = `${completedCount} of ${totalCount} completed (${Math.round(pct)}%)`;
+  document.getElementById('todoProgressBar').style.width = `${pct}%`;
   document.getElementById('streakCount').textContent = `${p.streak || 0} Day Streak`;
 
-  // 3-Day Consistency Rate
-  let checksPossible = totalHabits * 3;
-  let checksDone = 0;
-  habits.forEach(h => {
-    rollingDays.forEach(d => {
-      if (h.history && h.history[d.dateStr]) checksDone++;
-    });
-  });
-  const consistencyPct = checksPossible > 0 ? Math.round((checksDone / checksPossible) * 100) : 0;
-  document.getElementById('consistencyScoreText').textContent = `${consistencyPct}% consistency`;
-
-  if (filteredHabits.length === 0) {
+  if (tasks.length === 0) {
     container.innerHTML = `
       <div class="text-center py-8 bg-slate-50 rounded-2xl border border-slate-100 text-slate-400 text-xs">
-        No habits found in this category. Tap "Add Habit" above to create one!
+        No tasks for today. Add a new task above!
       </div>
     `;
     return;
   }
 
-  container.innerHTML = filteredHabits.map((habit) => {
-    const isTodayDone = habit.history && habit.history[todayStr];
-    const isYestDone = habit.history && habit.history[yestStr];
-    const missedYesterday = !isYestDone && !isTodayDone;
-
-    // Days checks html
-    const daysHtml = rollingDays.map((d) => {
-      const isDone = habit.history && habit.history[d.dateStr];
-      return `
-        <button 
-          onclick="toggleHabitDay('${habit.id}', '${d.dateStr}')" 
-          class="day-btn ${isDone ? 'completed' : ''} ${d.isToday ? 'is-today' : ''}" 
-          title="${d.dayLabel} (${d.shortDate})"
-        >
-          <span class="text-[9px] font-mono font-medium ${d.isToday ? 'text-emerald-700 font-bold' : 'text-slate-400'}">${d.dayLabel}</span>
-          <div class="day-check-icon mt-1">
-            ${isDone ? '✓' : ''}
-          </div>
-        </button>
-      `;
-    }).join('');
-
+  container.innerHTML = tasks.map((task, idx) => {
+    const isDone = task.completed;
     return `
-      <div class="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 transition shadow-sm group">
-        
-        <!-- Left: Icon, Title & Tags -->
-        <div class="flex items-center gap-3 min-w-0 flex-1 pr-2">
-          <span class="text-xl sm:text-2xl flex-shrink-0">${getCategoryIcon(habit.category)}</span>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2">
-              <span class="text-sm sm:text-base font-bold text-slate-900 truncate block">
-                ${escapeHtml(habit.title)}
-              </span>
-              ${missedYesterday ? `
-                <span class="hidden md:inline-block text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/60" title="Atomic Habits: Never miss twice!">
-                  ⚡ Never miss twice
-                </span>
-              ` : ''}
-            </div>
-            <div class="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-              <span class="font-medium text-slate-500">${getCategoryName(habit.category)}</span>
-              <span>•</span>
-              <button onclick="openEditHabitModal('${habit.id}')" class="hover:text-slate-700 underline text-[11px]">Edit</button>
-              <span>•</span>
-              <button onclick="deleteHabit('${habit.id}')" class="hover:text-rose-600 text-[11px]">Delete</button>
-            </div>
-          </div>
+      <div class="flex items-center justify-between p-3.5 sm:p-4 rounded-xl bg-slate-50/70 border border-slate-200/70 hover:border-slate-300 hover:bg-slate-50 transition group ${isDone ? 'opacity-75' : ''}">
+        <div class="flex items-center gap-3.5 flex-1 min-w-0">
+          <input 
+            type="checkbox" 
+            class="simple-todo-checkbox" 
+            ${isDone ? 'checked' : ''} 
+            onchange="toggleTask(${idx})"
+          >
+          <span class="text-sm sm:text-base font-medium ${isDone ? 'todo-done-text' : 'text-slate-800'} truncate block select-none">
+            ${escapeHtml(task.title)}
+          </span>
         </div>
 
-        <!-- Right: 3-Day Matrix Buttons -->
-        <div class="flex items-center gap-1.5 flex-shrink-0">
-          ${daysHtml}
-        </div>
-
+        <button onclick="deleteTask(${idx})" class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-600 p-1 transition" title="Delete task">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
       </div>
     `;
   }).join('');
 }
 
-// Toggle completion for a specific habit on a specific day (within the 3-day window)
-function toggleHabitDay(habitId, dateStr) {
+// Toggle Task
+function toggleTask(index) {
   const p = getCurrentProfile();
-  const habit = p.habits.find(h => h.id === habitId);
-  if (!habit) return;
+  const task = p.tasks[index];
+  if (!task) return;
 
-  if (!habit.history) habit.history = {};
-  habit.history[dateStr] = !habit.history[dateStr];
+  task.completed = !task.completed;
+  task.date = new Date().toISOString().split('T')[0];
 
-  if (habit.history[dateStr]) {
+  if (task.completed) {
     playTickSound();
   }
 
-  // Strictly enforce 3-day retention
-  pruneProfileHabitsToThreeDays(p);
-
-  // Check if all habits are completed for today
-  const rollingDays = getRollingThreeDays();
-  const todayStr = rollingDays[2].dateStr;
-  const allTodayDone = p.habits.every(h => h.history && h.history[todayStr]);
-
-  if (allTodayDone && p.habits.length > 0) {
+  const allDone = p.tasks.every(t => t.completed);
+  if (allDone && p.tasks.length > 0) {
     playCelebration();
-    confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
     p.streak = (p.streak || 0) + 1;
   }
 
   saveLocalState();
-  renderHabitsMatrix();
+  renderTodoList();
   lucide.createIcons();
 }
 
-function setHabitFilter(filterKey) {
-  currentHabitFilter = filterKey;
-  document.querySelectorAll('.category-filter-btn').forEach(btn => btn.classList.remove('active'));
-  const activeBtn = document.getElementById(`filter-${filterKey}`);
-  if (activeBtn) activeBtn.classList.add('active');
-  renderHabitsMatrix();
-  lucide.createIcons();
-}
-
-function handleAddNewHabit(e) {
+function handleAddNewTask(e) {
   e.preventDefault();
   const p = getCurrentProfile();
-  const input = document.getElementById('newHabitTitleInput');
-  const catSelect = document.getElementById('newHabitCategorySelect');
+  const input = document.getElementById('newTaskTitleInput');
   const title = input.value.trim();
   if (!title) return;
 
-  if (!p.habits) p.habits = [];
-
-  const newHabit = {
-    id: 'h-' + Date.now(),
+  if (!p.tasks) p.tasks = [];
+  p.tasks.push({
+    id: 't-' + Date.now(),
     title: title,
-    category: catSelect ? catSelect.value : detectCategory(title, 'focus'),
-    history: {}
-  };
-
-  p.habits.push(newHabit);
-  pruneProfileHabitsToThreeDays(p);
+    completed: false,
+    date: new Date().toISOString().split('T')[0]
+  });
 
   input.value = '';
   saveLocalState();
-  renderHabitsMatrix();
+  renderTodoList();
   lucide.createIcons();
 }
 
-function markAllTodayDone() {
+function deleteTask(index) {
   const p = getCurrentProfile();
-  const todayStr = getRollingThreeDays()[2].dateStr;
-  if (!p.habits) return;
-
-  p.habits.forEach(h => {
-    if (!h.history) h.history = {};
-    h.history[todayStr] = true;
-  });
-
-  playCelebration();
-  confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
+  p.tasks.splice(index, 1);
   saveLocalState();
-  renderHabitsMatrix();
+  renderTodoList();
   lucide.createIcons();
 }
 
-function deleteHabit(habitId) {
+function clearCompletedTasks() {
   const p = getCurrentProfile();
-  p.habits = p.habits.filter(h => h.id !== habitId);
+  p.tasks = p.tasks.filter(t => !t.completed);
   saveLocalState();
-  renderHabitsMatrix();
-  lucide.createIcons();
-}
-
-// Edit Habit Modal
-function openEditHabitModal(habitId) {
-  const p = getCurrentProfile();
-  const habit = p.habits.find(h => h.id === habitId);
-  if (!habit) return;
-
-  document.getElementById('editHabitId').value = habit.id;
-  document.getElementById('editHabitTitle').value = habit.title;
-  document.getElementById('editHabitCategory').value = habit.category || 'focus';
-
-  document.getElementById('editHabitModal').classList.remove('hidden');
-  document.getElementById('editHabitModal').classList.add('flex');
-}
-
-function closeEditHabitModal() {
-  document.getElementById('editHabitModal').classList.add('hidden');
-  document.getElementById('editHabitModal').classList.remove('flex');
-}
-
-function handleSaveEditedHabit(e) {
-  e.preventDefault();
-  const p = getCurrentProfile();
-  const id = document.getElementById('editHabitId').value;
-  const habit = p.habits.find(h => h.id === id);
-  if (!habit) return;
-
-  habit.title = document.getElementById('editHabitTitle').value.trim();
-  habit.category = document.getElementById('editHabitCategory').value;
-
-  closeEditHabitModal();
-  saveLocalState();
-  renderHabitsMatrix();
+  renderTodoList();
   lucide.createIcons();
 }
 
