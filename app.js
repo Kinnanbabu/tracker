@@ -1,59 +1,99 @@
 // ===================================================================
-// GoalQuest - Master Application Logic & Real-Time Sync Engine
+// MISSION 80K - Multi-Profile State & Real-Time Sync Engine
+// Profiles: Kinnan, Madhav, Allen Joy
+// Inspired by Noomo Agency & Lusion.co
 // ===================================================================
 
-const DEFAULT_STATE = {
-  currency: 'INR', // 'INR' or 'USD'
-  activeGoal: 'goa', // 'goa', 'iphone', or 'macbook'
-  totalSaved: 15000,
-  goals: {
-    goa: {
-      id: 'goa',
-      icon: '🏖️',
-      title: 'Trip to Goa (Sun & Freedom)',
-      subtitle: 'Unwind on Palolem & Anjuna beaches, scooty sunsets, night markets, and sea breezes.',
-      target: 35000,
-      deadline: '2026-11-20',
-      color: 'emerald'
-    },
-    iphone: {
-      id: 'iphone',
-      icon: '📱',
-      title: 'iPhone Newest Pro Max',
-      subtitle: 'Flagship camera, 120Hz ProMotion OLED, titanium finish & 24/7 companion.',
-      target: 134900,
-      deadline: '2026-12-31',
-      color: 'purple'
-    },
-    macbook: {
-      id: 'macbook',
-      icon: '💻',
-      title: 'MacBook Pro M-Series',
-      subtitle: 'Supercharged productivity, coding powerhouse, 22h battery life & career asset.',
-      target: 169900,
-      deadline: '2027-02-28',
-      color: 'sky'
-    }
+const DEFAULT_PROFILES = {
+  kinnan: {
+    id: 'kinnan',
+    name: 'Kinnan',
+    avatar: '⚡',
+    badge: 'OPERATIVE 01',
+    themeColor: 'indigo',
+    missionTarget: 80000,
+    totalSaved: 15600,
+    chosenReward: 'iphone',
+    deadline: '2026-12-31',
+    streak: 4,
+    transactions: [
+      { id: 'tx-k1', amount: 5000, note: 'Initial Mission starter', date: '2026-09-20', goal: 'iphone' },
+      { id: 'tx-k2', amount: 2600, note: 'Freelance design gig', date: '2026-09-22', goal: 'iphone' },
+      { id: 'tx-k3', amount: 8000, note: 'Monthly savings commitment', date: '2026-09-24', goal: 'iphone' }
+    ],
+    tasks: [
+      { id: 'tk-1', title: '💰 Saved ₹300 today (Skipped takeout & outside food)', category: 'saving', completed: true },
+      { id: 'tk-2', title: '🚫 Zero impulse shopping or online cart checkouts', category: 'habit', completed: true },
+      { id: 'tk-3', title: '💻 1 Hour dedicated skill building / side project', category: 'work', completed: true },
+      { id: 'tk-4', title: '🔍 Researched iPhone festive discount cards', category: 'work', completed: false },
+      { id: 'tk-5', title: '💧 Drank 2.5L water & kept disciplined focus', category: 'habit', completed: false }
+    ]
   },
-  transactions: [
-    { id: 'tx-1', amount: 5000, note: 'Initial savings starter', date: '2026-09-20', goal: 'goa' },
-    { id: 'tx-2', amount: 2000, note: 'Freelance design project payout', date: '2026-09-22', goal: 'goa' },
-    { id: 'tx-3', amount: 8000, note: 'Monthly savings allocation', date: '2026-09-24', goal: 'goa' }
-  ],
-  tasks: [
-    { id: 't-1', title: '💰 Saved ₹300 today (Skipped food delivery / coffee)', category: 'saving', completed: true, date: '' },
-    { id: 't-2', title: '🚫 Zero impulse shopping or unneeded checkouts', category: 'habit', completed: true, date: '' },
-    { id: 't-3', title: '💻 1 Hour dedicated skill learning or side income work', category: 'todo', completed: true, date: '' },
-    { id: 't-4', title: '🔍 Checked flight rates / student discount schemes', category: 'research', completed: false, date: '' },
-    { id: 't-5', title: '💧 Drank 2.5L water & kept disciplined mindset', category: 'habit', completed: false, date: '' }
-  ],
-  streak: 3,
+  madhav: {
+    id: 'madhav',
+    name: 'Madhav',
+    avatar: '💻',
+    badge: 'OPERATIVE 02',
+    themeColor: 'sky',
+    missionTarget: 80000,
+    totalSaved: 22000,
+    chosenReward: 'macbook',
+    deadline: '2027-01-31',
+    streak: 5,
+    transactions: [
+      { id: 'tx-m1', amount: 10000, note: 'MacBook seed fund', date: '2026-09-18', goal: 'macbook' },
+      { id: 'tx-m2', amount: 5000, note: 'Coding client milestone', date: '2026-09-21', goal: 'macbook' },
+      { id: 'tx-m3', amount: 7000, note: 'Weekly discipline deposit', date: '2026-09-24', goal: 'macbook' }
+    ],
+    tasks: [
+      { id: 'tm-1', title: '💻 2 Hours focused coding on revenue project', category: 'work', completed: true },
+      { id: 'tm-2', title: '💰 Deposited ₹500 directly into MacBook fund', category: 'saving', completed: true },
+      { id: 'tm-3', title: '🔍 Checked Apple Student discount & trade-in values', category: 'work', completed: true },
+      { id: 'tm-4', title: '🚫 No unnecessary gadget accessory purchases', category: 'habit', completed: false },
+      { id: 'tm-5', title: '⚡ Read 20 pages of tech architecture', category: 'work', completed: false }
+    ]
+  },
+  allen: {
+    id: 'allen',
+    name: 'Allen Joy',
+    avatar: '🏖️',
+    badge: 'OPERATIVE 03',
+    themeColor: 'emerald',
+    missionTarget: 80000,
+    totalSaved: 18500,
+    chosenReward: 'goa',
+    deadline: '2026-11-20',
+    streak: 3,
+    transactions: [
+      { id: 'tx-a1', amount: 6000, note: 'Flight deposit fund', date: '2026-09-19', goal: 'goa' },
+      { id: 'tx-a2', amount: 4500, note: 'Resort stay allocation', date: '2026-09-22', goal: 'goa' },
+      { id: 'tx-a3', amount: 8000, note: 'Goa experience pool', date: '2026-09-24', goal: 'goa' }
+    ],
+    tasks: [
+      { id: 'ta-1', title: '🌴 Researched flight deals to Dabolim / Mopa airport', category: 'work', completed: true },
+      { id: 'ta-2', title: '💰 Saved ₹400 on daily transport & lunch', category: 'saving', completed: true },
+      { id: 'ta-3', title: '🛵 Planned South Goa scooty itinerary (Palolem / Agonda)', category: 'work', completed: false },
+      { id: 'ta-4', title: '🚫 Zero weekend impulse spending', category: 'habit', completed: false },
+      { id: 'ta-5', title: '💧 Morning run & health discipline', category: 'habit', completed: false }
+    ]
+  }
+};
+
+const REWARD_INFO = {
+  iphone: { title: 'iPhone Newest Pro Max', icon: '📱', color: 'purple' },
+  macbook: { title: 'MacBook Pro M-Series', icon: '💻', color: 'sky' },
+  goa: { title: 'Trip to Goa (Sun & Freedom)', icon: '🏖️', color: 'emerald' }
+};
+
+let appState = {
+  version: 2,
+  currency: 'INR',
+  activeProfile: 'kinnan',
   syncRoom: 'GOAL-2341',
+  profiles: JSON.parse(JSON.stringify(DEFAULT_PROFILES)),
   lastUpdated: Date.now()
 };
 
-// Current App State
-let appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
 let selectedDateStr = new Date().toISOString().split('T')[0];
 let isSyncing = false;
 
@@ -61,17 +101,12 @@ let isSyncing = false;
 // AUDIO SYNTHESIZER
 // ===================================================================
 let audioCtx = null;
-
 function getAudioContext() {
   if (!audioCtx) {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (AudioContext) {
-      audioCtx = new AudioContext();
-    }
+    if (AudioContext) audioCtx = new AudioContext();
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
 
@@ -82,8 +117,8 @@ function playTickSound() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
+    osc.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
+    osc.frequency.exponentialRampToValueAtTime(987.77, ctx.currentTime + 0.12); // B5
     gain.gain.setValueAtTime(0.15, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
     osc.connect(gain);
@@ -93,102 +128,90 @@ function playTickSound() {
   } catch (e) {}
 }
 
-function playAllDoneFanfare() {
+function playFanfare() {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
-    const notes = [523.25, 659.25, 783.99, 1046.50];
-    notes.forEach((freq, idx) => {
+    const freqs = [523.25, 659.25, 783.99, 1046.50];
+    freqs.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      const startTime = ctx.currentTime + idx * 0.1;
+      const st = ctx.currentTime + i * 0.1;
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, startTime);
-      gain.gain.setValueAtTime(0.2, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
+      osc.frequency.setValueAtTime(freq, st);
+      gain.gain.setValueAtTime(0.2, st);
+      gain.gain.exponentialRampToValueAtTime(0.001, st + 0.3);
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.start(startTime);
-      osc.stop(startTime + 0.25);
+      osc.start(st);
+      osc.stop(st + 0.3);
     });
   } catch (e) {}
 }
 
 // ===================================================================
-// INITIALIZATION & URL HANDLING
+// INITIALIZATION
 // ===================================================================
-
 document.addEventListener('DOMContentLoaded', async () => {
+  initAmbientCanvas();
   loadLocalState();
-  handleUrlRoomAndData();
+  handleUrlParams();
+  
+  // Check if profile was previously selected
+  const savedProfile = localStorage.getItem('goalquest_active_profile');
+  if (savedProfile && appState.profiles[savedProfile]) {
+    appState.activeProfile = savedProfile;
+    document.getElementById('profileGateScreen').classList.add('hidden');
+  }
+
   renderApp();
   initSyncInput();
   lucide.createIcons();
 
-  // Initial pull from cloud
+  // Pull latest multi-profile state from Upstash cloud
   await pullFromCloud();
 
-  // Setup auto-polling every 8 seconds
+  // Setup auto-polling every 8s for live real-time sync across devices
   setInterval(() => {
     if (!document.hidden && !isSyncing) {
       pullFromCloud(true);
     }
   }, 8000);
 
-  // Poll on tab refocus
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      pullFromCloud(true);
-    }
+    if (!document.hidden) pullFromCloud(true);
   });
 });
-
-function handleUrlRoomAndData() {
-  const params = new URLSearchParams(window.location.search);
-  const roomParam = params.get('room');
-  if (roomParam) {
-    appState.syncRoom = roomParam.toUpperCase().trim();
-    saveLocalState(false);
-  }
-
-  // Check for hash data payload (instant migration)
-  const hash = window.location.hash;
-  if (hash && hash.includes('import=')) {
-    try {
-      const rawMatch = hash.match(/import=([^&]*)/);
-      if (rawMatch && rawMatch[1]) {
-        const decoded = JSON.parse(decodeURIComponent(rawMatch[1]));
-        if (decoded.totalSaved !== undefined) {
-          appState = { ...appState, ...decoded };
-          saveLocalState(true);
-          // Clean URL
-          window.history.replaceState(null, '', window.location.pathname + (roomParam ? `?room=${roomParam}` : ''));
-        }
-      }
-    } catch (e) {
-      console.error('URL import error:', e);
-    }
-  }
-}
 
 function loadLocalState() {
   try {
     const saved = localStorage.getItem('goalquest_state');
     if (saved) {
       const parsed = JSON.parse(saved);
-      appState = { ...DEFAULT_STATE, ...parsed };
-      appState.goals = { ...DEFAULT_STATE.goals, ...(parsed.goals || {}) };
+      // Migrate old single-user format if detected
+      if (parsed.profiles) {
+        appState = { ...appState, ...parsed };
+      } else if (parsed.totalSaved !== undefined) {
+        // Migrate old state to Kinnan's profile so no saved funds are lost!
+        appState.profiles.kinnan.totalSaved = parsed.totalSaved;
+        if (parsed.transactions && parsed.transactions.length > 0) {
+          appState.profiles.kinnan.transactions = parsed.transactions;
+        }
+        if (parsed.tasks && parsed.tasks.length > 0) {
+          appState.profiles.kinnan.tasks = parsed.tasks;
+        }
+      }
     }
   } catch (e) {
     console.error('Failed to load local state:', e);
   }
 }
 
-function saveLocalState(triggerCloudPush = true) {
+function saveLocalState(triggerCloud = true) {
   try {
     appState.lastUpdated = Date.now();
     localStorage.setItem('goalquest_state', JSON.stringify(appState));
-    if (triggerCloudPush) {
+    if (triggerCloud) {
       syncToCloudDebounced();
     }
   } catch (e) {
@@ -196,10 +219,78 @@ function saveLocalState(triggerCloudPush = true) {
   }
 }
 
-// ===================================================================
-// CLOUD SYNC ENGINE (GET & POST)
-// ===================================================================
+function handleUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const room = params.get('room');
+  if (room) {
+    appState.syncRoom = room.toUpperCase().trim();
+  }
 
+  const profile = params.get('profile');
+  if (profile && appState.profiles[profile]) {
+    appState.activeProfile = profile;
+    localStorage.setItem('goalquest_active_profile', profile);
+    document.getElementById('profileGateScreen').classList.add('hidden');
+  }
+}
+
+// ===================================================================
+// PROFILE MANAGEMENT & GATE
+// ===================================================================
+function selectProfile(profileId) {
+  if (!appState.profiles[profileId]) return;
+  appState.activeProfile = profileId;
+  localStorage.setItem('goalquest_active_profile', profileId);
+
+  // Transition out gate
+  const gate = document.getElementById('profileGateScreen');
+  gate.style.opacity = '0';
+  setTimeout(() => {
+    gate.classList.add('hidden');
+    gate.style.opacity = '1';
+  }, 400);
+
+  playTickSound();
+  confetti({ particleCount: 40, spread: 60, origin: { y: 0.6 } });
+  renderApp();
+}
+
+function openProfileGate() {
+  const gate = document.getElementById('profileGateScreen');
+  updateGateCards();
+  gate.classList.remove('hidden');
+  gate.style.opacity = '1';
+  lucide.createIcons();
+}
+
+function updateGateCards() {
+  const keys = ['kinnan', 'madhav', 'allen'];
+  let squadTotal = 0;
+
+  keys.forEach(k => {
+    const p = appState.profiles[k];
+    const pct = Math.min(100, (p.totalSaved / p.missionTarget) * 100);
+    squadTotal += p.totalSaved;
+
+    const rewardObj = REWARD_INFO[p.chosenReward] || { title: 'Reward Target' };
+    const rEl = document.getElementById(`gateReward-${k}`);
+    const pctEl = document.getElementById(`gatePercent-${k}`);
+    const barEl = document.getElementById(`gateBar-${k}`);
+    const sEl = document.getElementById(`gateSaved-${k}`);
+
+    if (rEl) rEl.textContent = `Target: ${rewardObj.title}`;
+    if (pctEl) pctEl.textContent = `${pct.toFixed(1)}%`;
+    if (barEl) barEl.style.width = `${pct}%`;
+    if (sEl) sEl.textContent = formatMoney(p.totalSaved);
+  });
+
+  const squadEl = document.getElementById('gateSquadTotal');
+  if (squadEl) squadEl.textContent = formatMoney(squadTotal);
+}
+
+// ===================================================================
+// CLOUD SYNC ENGINE (UPSTASH REDIS)
+// ===================================================================
 let syncDebounceTimer = null;
 function syncToCloudDebounced() {
   clearTimeout(syncDebounceTimer);
@@ -208,7 +299,7 @@ function syncToCloudDebounced() {
   }, 1000);
 }
 
-function updateSyncUI(status, message) {
+function updateSyncUI(status) {
   const dot = document.getElementById('syncStatusDot');
   const text = document.getElementById('syncStatusText');
   if (!dot || !text) return;
@@ -221,14 +312,6 @@ function updateSyncUI(status, message) {
     case 'synced':
       dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse';
       text.textContent = `Cloud Synced (${appState.syncRoom})`;
-      break;
-    case 'missing_api':
-      dot.className = 'w-2 h-2 rounded-full bg-rose-500 animate-ping';
-      text.textContent = 'Upload api/sync.js to GitHub';
-      break;
-    case 'missing_kv':
-      dot.className = 'w-2 h-2 rounded-full bg-amber-400';
-      text.textContent = 'Connect KV in Vercel Storage';
       break;
     case 'local':
     default:
@@ -245,33 +328,32 @@ async function pullFromCloud(silent = false) {
 
   try {
     const res = await fetch(`/api/sync?room=${room}`);
-    
-    // If the api folder was not uploaded to GitHub:
-    if (res.status === 404) {
-      updateSyncUI('missing_api');
-      return;
-    }
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        const cloudData = json.data;
 
-    const json = await res.json();
-
-    if (!json.configured) {
-      updateSyncUI('missing_kv');
-      return;
-    }
-
-    if (json.success && json.data) {
-      const cloudData = json.data;
-      // Only overwrite if cloud data is newer or has transactions
-      if (cloudData.lastUpdated && cloudData.lastUpdated > (appState.lastUpdated || 0)) {
-        appState = { ...DEFAULT_STATE, ...cloudData };
-        appState.goals = { ...DEFAULT_STATE.goals, ...(cloudData.goals || {}) };
-        localStorage.setItem('goalquest_state', JSON.stringify(appState));
-        renderApp();
+        // Check if cloud data has the multi-profile structure
+        if (cloudData.profiles) {
+          if ((cloudData.lastUpdated || 0) > (appState.lastUpdated || 0)) {
+            appState.profiles = cloudData.profiles;
+            appState.lastUpdated = cloudData.lastUpdated;
+            localStorage.setItem('goalquest_state', JSON.stringify(appState));
+            renderApp();
+          }
+        } else if (cloudData.totalSaved !== undefined) {
+          // Backward-compat: update Kinnan
+          if (cloudData.totalSaved > appState.profiles.kinnan.totalSaved) {
+            appState.profiles.kinnan.totalSaved = cloudData.totalSaved;
+            if (cloudData.transactions) appState.profiles.kinnan.transactions = cloudData.transactions;
+            renderApp();
+          }
+        }
+        updateSyncUI('synced');
+      } else {
+        // Room empty on cloud, seed with current multi-profile data
+        pushToCloud();
       }
-      updateSyncUI('synced');
-    } else {
-      // Room is empty on cloud, push our local state to initialize it!
-      pushToCloud();
     }
   } catch (err) {
     if (!silent) updateSyncUI('local');
@@ -293,17 +375,9 @@ async function pushToCloud() {
       body: JSON.stringify({ data: appState, room: room })
     });
 
-    if (res.status === 404) {
-      updateSyncUI('missing_api');
-      isSyncing = false;
-      return;
-    }
-
-    const json = await res.json();
-    if (!json.configured) {
-      updateSyncUI('missing_kv');
-    } else if (json.success) {
-      updateSyncUI('synced');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success) updateSyncUI('synced');
     } else {
       updateSyncUI('local');
     }
@@ -314,48 +388,29 @@ async function pushToCloud() {
   }
 }
 
-async function saveSyncRoomCode() {
+function triggerManualSync() {
+  pushToCloud();
+}
+
+function saveSyncRoomCode() {
   const input = document.getElementById('syncRoomInput');
   const code = input.value.trim().toUpperCase();
   if (!code) return;
 
   appState.syncRoom = code;
   saveLocalState(false);
-  
-  // Try to pull data from this room first!
-  updateSyncUI('syncing');
-  try {
-    const res = await fetch(`/api/sync?room=${code}`);
-    if (res.ok) {
-      const json = await res.json();
-      if (json.data) {
-        appState = { ...DEFAULT_STATE, ...json.data };
-        appState.syncRoom = code;
-        saveLocalState(false);
-        renderApp();
-        alert(`🎉 Connected to Room "${code}"! Latest cloud progress loaded.`);
-        updateSyncUI('synced');
-        return;
-      }
-    }
-  } catch (e) {}
-
-  // If no data in cloud room, push current data
-  await pushToCloud();
-  alert(`Room code set to "${code}". Now enter "${code}" on your other device!`);
+  pullFromCloud();
+  alert(`Connected to Room "${code}"! Data will synchronize across all devices using this room.`);
 }
 
 function initSyncInput() {
-  const roomInput = document.getElementById('syncRoomInput');
-  if (roomInput && appState.syncRoom) {
-    roomInput.value = appState.syncRoom;
-  }
+  const input = document.getElementById('syncRoomInput');
+  if (input && appState.syncRoom) input.value = appState.syncRoom;
 }
 
 // ===================================================================
 // RENDERING
 // ===================================================================
-
 function formatMoney(amount) {
   const isINR = appState.currency === 'INR';
   const symbol = isINR ? '₹' : '$';
@@ -363,111 +418,99 @@ function formatMoney(amount) {
   return `${symbol}${val.toLocaleString('en-US')}`;
 }
 
+function getCurrentProfile() {
+  return appState.profiles[appState.activeProfile] || appState.profiles.kinnan;
+}
+
 function renderApp() {
-  renderCurrencyUI();
-  renderActiveGoalHero();
-  renderContenderCards();
-  renderTransactionsList();
-  renderDailyPlanner();
-  updatePaceCalculations();
+  renderNavbar();
+  renderHeroMission();
+  renderRewardCards();
+  renderTransactions();
+  renderPlanner();
+  renderSquadLeaderboard();
+  updateGateCards();
   lucide.createIcons();
 }
 
-function renderCurrencyUI() {
+function renderNavbar() {
+  const p = getCurrentProfile();
+  document.getElementById('navAvatar').textContent = p.avatar;
+  document.getElementById('navProfileName').textContent = p.name;
+  
   const isINR = appState.currency === 'INR';
   const symbol = isINR ? '₹' : '$';
   document.getElementById('currencySymbol').textContent = symbol;
   document.getElementById('currencyLabel').textContent = appState.currency;
-
-  document.querySelectorAll('.currency-symbol').forEach(el => {
-    el.textContent = symbol;
-  });
+  document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = symbol);
 }
 
-function renderActiveGoalHero() {
-  const goalKey = appState.activeGoal || 'goa';
-  const goal = appState.goals[goalKey];
-  if (!goal) return;
-
-  document.getElementById('activeGoalTitle').textContent = goal.title;
-  document.getElementById('activeGoalSubtitle').textContent = goal.subtitle;
-  document.getElementById('headerGoalSubtext').textContent = `Target: ${goal.title}`;
-
-  const saved = appState.totalSaved || 0;
-  const target = goal.target;
+function renderHeroMission() {
+  const p = getCurrentProfile();
+  const target = p.missionTarget || 80000;
+  const saved = p.totalSaved || 0;
   const pct = Math.min(100, Math.max(0, (saved / target) * 100));
 
-  document.getElementById('activeSavedAmount').textContent = formatMoney(saved);
-  document.getElementById('activeTargetAmount').textContent = formatMoney(target);
-  document.getElementById('progressPercentageText').textContent = pct.toFixed(1) + '%';
+  document.getElementById('heroOperativeName').textContent = `Operative: ${p.name}`;
+  document.getElementById('heroSavedAmount').textContent = formatMoney(saved);
+  document.getElementById('heroTargetAmount').textContent = formatMoney(target);
+  document.getElementById('heroProgressPercentage').textContent = `${pct.toFixed(1)}%`;
 
   const remaining = Math.max(0, target - saved);
-  document.getElementById('remainingAmountText').textContent = `${formatMoney(remaining)} remaining`;
+  document.getElementById('heroRemainingText').textContent = `${formatMoney(remaining)} to complete Mission 80K`;
 
-  const bar = document.getElementById('activeProgressBar');
-  bar.style.width = `${pct}%`;
+  document.getElementById('heroProgressBar').style.width = `${pct}%`;
 
-  if (goalKey === 'goa') {
-    bar.className = 'h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 transition-all duration-700 relative shimmer-bar';
-  } else if (goalKey === 'iphone') {
-    bar.className = 'h-full rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 transition-all duration-700 relative shimmer-bar';
-  } else {
-    bar.className = 'h-full rounded-full bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 transition-all duration-700 relative shimmer-bar';
-  }
+  const rewardObj = REWARD_INFO[p.chosenReward] || { title: 'Custom Goal' };
+  document.getElementById('heroRewardTitle').textContent = rewardObj.title;
 
-  if (goal.deadline) {
-    const diffDays = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
-    document.getElementById('deadlineBadge').textContent = diffDays > 0 ? `Target: ${diffDays} Days Left` : 'Target Date Reached!';
-  }
+  // Pace calculations
+  const daily60 = Math.ceil(remaining / 60);
+  document.getElementById('paceDaily60').textContent = `${formatMoney(daily60)} / day`;
+
+  const weekly90 = Math.ceil(remaining / (90 / 7));
+  document.getElementById('paceWeekly').textContent = `${formatMoney(weekly90)} / week`;
+
+  const daysLeft = Math.ceil(remaining / 500);
+  document.getElementById('currentPaceText').textContent = remaining === 0 ? 'Mission Achieved! 🏆' : `~${daysLeft} days (@ ₹500/d)`;
 }
 
-function renderContenderCards() {
-  const keys = ['iphone', 'macbook', 'goa'];
-  const saved = appState.totalSaved || 0;
+function renderRewardCards() {
+  const p = getCurrentProfile();
+  ['iphone', 'macbook', 'goa'].forEach(k => {
+    const card = document.getElementById(`rewardCard-${k}`);
+    const badge = document.getElementById(`rewardBadge-${k}`);
+    const isSelected = p.chosenReward === k;
 
-  keys.forEach(k => {
-    const g = appState.goals[k];
-    const pct = Math.min(100, Math.max(0, (saved / g.target) * 100));
-
-    const priceEl = document.getElementById(`${k}PriceDisplay`);
-    const savedEl = document.getElementById(`${k}SavedDisplay`);
-    const barEl = document.getElementById(`${k}ProgressBar`);
-    const badgeEl = document.getElementById(`${k}ActiveBadge`);
-    const cardEl = document.getElementById(`card-${k}`);
-
-    if (priceEl) priceEl.textContent = formatMoney(g.target);
-    if (savedEl) savedEl.textContent = `${formatMoney(saved)} (${pct.toFixed(1)}%)`;
-    if (barEl) barEl.style.width = `${pct}%`;
-
-    const isActive = appState.activeGoal === k;
-    if (badgeEl) {
-      if (isActive) {
-        badgeEl.innerHTML = `<i data-lucide="check" class="w-3 h-3"></i> ACTIVE`;
-        badgeEl.className = 'text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 flex items-center gap-1';
-        cardEl.classList.add('ring-2', 'ring-emerald-400/50');
+    if (badge) {
+      if (isSelected) {
+        badge.textContent = 'ALLOCATED';
+        badge.className = 'text-[10px] font-mono font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-500/50';
+        card.classList.add('ring-2', 'ring-emerald-400/50', 'bg-white/[0.04]');
       } else {
-        badgeEl.textContent = 'Select';
-        badgeEl.className = 'text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-gray-300 border border-white/10';
-        cardEl.classList.remove('ring-2', 'ring-emerald-400/50');
+        badge.textContent = 'Select';
+        badge.className = 'text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/5 text-slate-400';
+        card.classList.remove('ring-2', 'ring-emerald-400/50', 'bg-white/[0.04]');
       }
     }
   });
 }
 
-function renderTransactionsList() {
+function renderTransactions() {
+  const p = getCurrentProfile();
   const container = document.getElementById('transactionsList');
-  if (!container) return;
+  document.getElementById('profileTxTitle').textContent = `${p.name}'s Savings Log`;
 
-  if (!appState.transactions || appState.transactions.length === 0) {
+  if (!p.transactions || p.transactions.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-6 text-gray-500 text-xs">
-        No savings logged yet. Tap "Add Savings" to deposit your first milestone!
+      <div class="text-center py-6 text-slate-500 text-xs font-mono">
+        No savings logged for ${p.name} yet. Tap "Log Savings" to deposit!
       </div>
     `;
     return;
   }
 
-  const list = [...appState.transactions].reverse();
+  const list = [...p.transactions].reverse();
   container.innerHTML = list.map(tx => `
     <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition">
       <div class="flex items-center gap-3">
@@ -475,13 +518,13 @@ function renderTransactionsList() {
           +
         </div>
         <div>
-          <span class="text-xs font-semibold text-gray-200 block">${escapeHtml(tx.note || 'Savings Deposit')}</span>
-          <span class="text-[10px] text-gray-500 font-mono-nums">${tx.date || 'Recently'}</span>
+          <span class="text-xs font-semibold text-slate-200 block">${escapeHtml(tx.note || 'Savings Deposit')}</span>
+          <span class="text-[10px] text-slate-500 font-mono-nums">${tx.date || 'Recently'}</span>
         </div>
       </div>
       <div class="flex items-center gap-3">
         <span class="text-sm font-bold font-mono-nums text-emerald-400">+${formatMoney(tx.amount)}</span>
-        <button onclick="deleteTransaction('${tx.id}')" title="Delete" class="text-gray-500 hover:text-rose-400 p-1 transition">
+        <button onclick="deleteTransaction('${tx.id}')" title="Delete" class="text-slate-500 hover:text-rose-400 p-1 transition">
           <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
         </button>
       </div>
@@ -489,52 +532,46 @@ function renderTransactionsList() {
   `).join('');
 }
 
-function renderDailyPlanner() {
+function renderPlanner() {
+  const p = getCurrentProfile();
   const dateDisplay = document.getElementById('currentDateDisplay');
   const todayStr = new Date().toISOString().split('T')[0];
-  if (selectedDateStr === todayStr) {
-    dateDisplay.textContent = `Today (${selectedDateStr})`;
-  } else {
-    dateDisplay.textContent = selectedDateStr;
-  }
+  dateDisplay.textContent = selectedDateStr === todayStr ? `Today (${selectedDateStr})` : selectedDateStr;
 
   const container = document.getElementById('taskListContainer');
-  if (!container) return;
-
-  const tasks = appState.tasks || [];
+  const tasks = p.tasks || [];
   const completedCount = tasks.filter(t => t.completed).length;
   const totalCount = tasks.length;
-  const ratioText = `${completedCount} of ${totalCount} completed (${totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0}%)`;
-
-  document.getElementById('dailyCompletionRatio').textContent = ratioText;
-  document.getElementById('todayTasksPill').textContent = `${completedCount}/${totalCount}`;
   const pct = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+
+  document.getElementById('dailyCompletionRatio').textContent = `${completedCount} of ${totalCount} completed (${Math.round(pct)}%)`;
+  document.getElementById('todayTasksPill').textContent = `${completedCount}/${totalCount}`;
   document.getElementById('dailyProgressBar').style.width = `${pct}%`;
-  document.getElementById('streakCount').textContent = `${appState.streak || 0} Day Streak`;
+  document.getElementById('streakCount').textContent = `${p.streak || 0} Day Streak`;
 
   container.innerHTML = tasks.map((task, idx) => {
     const isDone = task.completed;
-    const catBadge = getCategoryBadge(task.category);
-
     return `
-      <div class="glass-card p-3.5 rounded-xl border border-white/5 flex items-center justify-between gap-3 group transition hover:border-white/10 ${isDone ? 'bg-black/30' : ''}">
+      <div class="lusion-card p-3.5 rounded-xl border border-white/5 flex items-center justify-between gap-3 group transition hover:border-white/10 ${isDone ? 'bg-black/30' : ''}">
         <div class="flex items-center gap-3 flex-1 min-w-0">
           <input 
             type="checkbox" 
-            class="tick-checkbox flex-shrink-0" 
+            class="lusion-tick flex-shrink-0" 
             ${isDone ? 'checked' : ''} 
             onchange="toggleTask(${idx})"
           >
           <div class="min-w-0 flex-1">
-            <p class="text-xs sm:text-sm font-medium ${isDone ? 'task-completed text-gray-500' : 'text-gray-200'} truncate">
+            <p class="text-xs sm:text-sm font-medium ${isDone ? 'task-done-strike text-slate-500' : 'text-slate-200'} truncate">
               ${escapeHtml(task.title)}
             </p>
           </div>
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
-          ${catBadge}
-          <button onclick="deleteTask(${idx})" class="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-rose-400 p-1 transition">
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/10 uppercase">
+            ${task.category || 'todo'}
+          </span>
+          <button onclick="deleteTask(${idx})" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 p-1 transition">
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -543,105 +580,115 @@ function renderDailyPlanner() {
   }).join('');
 }
 
-function getCategoryBadge(cat) {
-  switch (cat) {
-    case 'saving':
-      return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">💰 Saving</span>`;
-    case 'habit':
-      return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">⚡ Habit</span>`;
-    case 'research':
-      return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold border border-purple-500/30">🔍 Research</span>`;
-    default:
-      return `<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-500/20 text-gray-300 font-semibold border border-gray-500/30">📝 Task</span>`;
-  }
-}
+function renderSquadLeaderboard() {
+  const container = document.getElementById('squadLeaderboardList');
+  if (!container) return;
 
-function updatePaceCalculations() {
-  const goal = appState.goals[appState.activeGoal || 'goa'];
-  if (!goal) return;
+  const profilesArr = Object.values(appState.profiles).sort((a, b) => {
+    const pctA = a.totalSaved / a.missionTarget;
+    const pctB = b.totalSaved / b.missionTarget;
+    return pctB - pctA; // Rank 1 is highest percentage
+  });
 
-  const remaining = Math.max(0, goal.target - (appState.totalSaved || 0));
+  container.innerHTML = profilesArr.map((prof, rank) => {
+    const pct = Math.min(100, (prof.totalSaved / prof.missionTarget) * 100);
+    const rewardObj = REWARD_INFO[prof.chosenReward] || { title: 'Target' };
+    const isMe = prof.id === appState.activeProfile;
 
-  const daily60 = Math.ceil(remaining / 60);
-  document.getElementById('paceDaily60').textContent = `${formatMoney(daily60)} / day`;
+    return `
+      <div class="lusion-card p-5 rounded-2xl border ${isMe ? 'border-indigo-500/50 bg-indigo-950/20' : 'border-white/10'} flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <span class="text-lg font-mono font-extrabold text-slate-400">#${rank + 1}</span>
+          <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl">
+            ${prof.avatar}
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 class="font-bold text-base text-white font-display">${prof.name}</h4>
+              ${isMe ? '<span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-indigo-500/30 text-indigo-300">YOU</span>' : ''}
+            </div>
+            <span class="text-xs text-slate-400">Aiming for: <strong class="text-slate-200">${rewardObj.title}</strong></span>
+          </div>
+        </div>
 
-  const weekly90 = Math.ceil(remaining / (90 / 7));
-  document.getElementById('paceWeekly').textContent = `${formatMoney(weekly90)} / week`;
+        <div class="flex-1 max-w-xs space-y-1.5">
+          <div class="flex items-center justify-between text-xs font-mono-nums">
+            <span class="text-slate-400">${formatMoney(prof.totalSaved)} / ₹80,000</span>
+            <span class="text-emerald-400 font-bold">${pct.toFixed(1)}%</span>
+          </div>
+          <div class="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
+            <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-400" style="width: ${pct}%;"></div>
+          </div>
+        </div>
 
-  const avgDailyPace = 500;
-  const daysLeft = Math.ceil(remaining / avgDailyPace);
-  document.getElementById('currentPaceText').textContent = remaining === 0 ? 'Goal Met! 🎉' : `~${daysLeft} days (at ₹500/d)`;
+        <div class="flex items-center gap-2">
+          <button onclick="selectProfile('${prof.id}')" class="px-3 py-1.5 rounded-lg lusion-pill text-xs font-medium hover:text-white transition">
+            View Operative
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ===================================================================
-// USER ACTIONS
+// USER ACTIONS (TICK, DEPOSIT, GOAL)
 // ===================================================================
-
 function toggleTask(index) {
-  const task = appState.tasks[index];
+  const p = getCurrentProfile();
+  const task = p.tasks[index];
   if (!task) return;
 
   task.completed = !task.completed;
-  if (task.completed) {
-    playTickSound();
-  }
+  if (task.completed) playTickSound();
 
-  const allDone = appState.tasks.every(t => t.completed);
-  if (allDone && appState.tasks.length > 0) {
-    playAllDoneFanfare();
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-    appState.streak = (appState.streak || 0) + 1;
+  const allDone = p.tasks.every(t => t.completed);
+  if (allDone && p.tasks.length > 0) {
+    playFanfare();
+    confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+    p.streak = (p.streak || 0) + 1;
   }
 
   saveLocalState();
-  renderDailyPlanner();
+  renderPlanner();
   lucide.createIcons();
 }
 
 function handleAddTask(e) {
   e.preventDefault();
+  const p = getCurrentProfile();
   const input = document.getElementById('newTaskInput');
-  const catSelect = document.getElementById('newTaskCategory');
+  const cat = document.getElementById('newTaskCategory');
   const title = input.value.trim();
   if (!title) return;
 
-  const newTask = {
+  p.tasks.push({
     id: 't-' + Date.now(),
     title: title,
-    category: catSelect ? catSelect.value : 'todo',
-    completed: false,
-    date: selectedDateStr
-  };
+    category: cat ? cat.value : 'todo',
+    completed: false
+  });
 
-  appState.tasks.push(newTask);
   input.value = '';
   saveLocalState();
-  renderDailyPlanner();
+  renderPlanner();
   lucide.createIcons();
 }
 
 function deleteTask(index) {
-  appState.tasks.splice(index, 1);
+  const p = getCurrentProfile();
+  p.tasks.splice(index, 1);
   saveLocalState();
-  renderDailyPlanner();
+  renderPlanner();
   lucide.createIcons();
 }
 
-function setActiveGoal(goalKey) {
-  if (!appState.goals[goalKey]) return;
-  appState.activeGoal = goalKey;
+function setChosenReward(rewardKey) {
+  const p = getCurrentProfile();
+  p.chosenReward = rewardKey;
   saveLocalState();
   renderApp();
-
-  confetti({
-    particleCount: 30,
-    spread: 50,
-    origin: { y: 0.8 }
-  });
+  confetti({ particleCount: 30, spread: 50, origin: { y: 0.8 } });
 }
 
 function quickAddAmount(amt) {
@@ -650,6 +697,7 @@ function quickAddAmount(amt) {
 
 function handleDepositSubmit(e) {
   e.preventDefault();
+  const p = getCurrentProfile();
   const amtInput = document.getElementById('depositAmountInput');
   const noteInput = document.getElementById('depositNoteInput');
   const amount = parseFloat(amtInput.value);
@@ -661,28 +709,19 @@ function handleDepositSubmit(e) {
     amount: amount,
     note: noteInput.value.trim() || 'Savings addition',
     date: new Date().toISOString().split('T')[0],
-    goal: appState.activeGoal
+    goal: p.chosenReward
   };
 
-  appState.totalSaved = (appState.totalSaved || 0) + amount;
-  if (!appState.transactions) appState.transactions = [];
-  appState.transactions.push(newTx);
+  p.totalSaved = (p.totalSaved || 0) + amount;
+  if (!p.transactions) p.transactions = [];
+  p.transactions.push(newTx);
 
-  const activeGoal = appState.goals[appState.activeGoal];
-  if (activeGoal && appState.totalSaved >= activeGoal.target) {
-    playAllDoneFanfare();
-    confetti({
-      particleCount: 200,
-      spread: 100,
-      origin: { y: 0.5 }
-    });
+  if (p.totalSaved >= p.missionTarget) {
+    playFanfare();
+    confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } });
   } else {
     playTickSound();
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.7 }
-    });
+    confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
   }
 
   amtInput.value = '';
@@ -693,11 +732,12 @@ function handleDepositSubmit(e) {
 }
 
 function deleteTransaction(id) {
-  const tx = appState.transactions.find(t => t.id === id);
+  const p = getCurrentProfile();
+  const tx = p.transactions.find(t => t.id === id);
   if (!tx) return;
 
-  appState.totalSaved = Math.max(0, (appState.totalSaved || 0) - tx.amount);
-  appState.transactions = appState.transactions.filter(t => t.id !== id);
+  p.totalSaved = Math.max(0, (p.totalSaved || 0) - tx.amount);
+  p.transactions = p.transactions.filter(t => t.id !== id);
   saveLocalState();
   renderApp();
 }
@@ -708,28 +748,25 @@ function toggleCurrency() {
   renderApp();
 }
 
+// Navigation & Modals
 function switchTab(tabId) {
   document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
   const target = document.getElementById(`tab-${tabId}`);
   if (target) target.classList.remove('hidden');
 
   document.querySelectorAll('.nav-tab').forEach(btn => {
-    btn.className = 'nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-gray-400 hover:text-gray-200 hover:bg-white/5';
+    btn.className = 'nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-white/5';
   });
   const activeBtn = document.getElementById(`nav-btn-${tabId}`);
   if (activeBtn) {
     activeBtn.className = 'nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-indigo-600/20 text-indigo-300 border border-indigo-500/30';
   }
 
-  const navKeys = ['tracker', 'planner', 'battle', 'blueprints', 'sync'];
+  const navKeys = ['tracker', 'planner', 'squad', 'sync'];
   navKeys.forEach(k => {
     const el = document.getElementById(`mobile-nav-${k}`);
     if (el) {
-      if (k === tabId) {
-        el.className = 'flex flex-col items-center gap-1 text-indigo-400 p-1 text-xs';
-      } else {
-        el.className = 'flex flex-col items-center gap-1 text-gray-400 p-1 text-xs';
-      }
+      el.className = k === tabId ? 'flex flex-col items-center gap-1 text-indigo-400 p-1 text-xs' : 'flex flex-col items-center gap-1 text-slate-400 p-1 text-xs';
     }
   });
 
@@ -740,16 +777,17 @@ function changeDate(delta) {
   const current = new Date(selectedDateStr);
   current.setDate(current.getDate() + delta);
   selectedDateStr = current.toISOString().split('T')[0];
-  renderDailyPlanner();
+  renderPlanner();
 }
 
 function goToToday() {
   selectedDateStr = new Date().toISOString().split('T')[0];
-  renderDailyPlanner();
+  renderPlanner();
 }
 
-// Modals
 function openDepositModal() {
+  const p = getCurrentProfile();
+  document.getElementById('depositModalProfile').textContent = p.name;
   document.getElementById('depositModal').classList.remove('hidden');
   document.getElementById('depositModal').classList.add('flex');
   setTimeout(() => document.getElementById('depositAmountInput').focus(), 50);
@@ -771,14 +809,39 @@ function closeMobileQRModal() {
   document.getElementById('mobileQRModal').classList.remove('flex');
 }
 
+function generateSyncQRCode() {
+  try {
+    const canvas = document.getElementById('qrCanvas');
+    if (!canvas) return;
+    const baseUrl = window.location.origin + window.location.pathname;
+    const mobileUrl = `${baseUrl}?room=${appState.syncRoom}&profile=${appState.activeProfile}`;
+
+    new QRious({
+      element: canvas,
+      value: mobileUrl,
+      size: 200,
+      background: '#ffffff',
+      foreground: '#05070d',
+      level: 'M'
+    });
+  } catch (e) {}
+}
+
+function copyMobileSyncLink() {
+  const baseUrl = window.location.origin + window.location.pathname;
+  const mobileUrl = `${baseUrl}?room=${appState.syncRoom}&profile=${appState.activeProfile}`;
+
+  navigator.clipboard.writeText(mobileUrl).then(() => {
+    const btn = document.getElementById('copyLinkBtnText');
+    btn.textContent = 'Copied to Clipboard!';
+    setTimeout(() => btn.textContent = 'Copy Shareable Mobile Link', 2500);
+  });
+}
+
 function openGoalSettingsModal() {
-  const goal = appState.goals[appState.activeGoal];
-  if (!goal) return;
-
-  document.getElementById('editGoalTitleInput').value = goal.title;
-  document.getElementById('editGoalTargetInput').value = goal.target;
-  document.getElementById('editGoalDeadlineInput').value = goal.deadline || '';
-
+  const p = getCurrentProfile();
+  document.getElementById('editGoalTargetInput').value = p.missionTarget || 80000;
+  document.getElementById('editGoalDeadlineInput').value = p.deadline || '';
   document.getElementById('goalSettingsModal').classList.remove('hidden');
   document.getElementById('goalSettingsModal').classList.add('flex');
 }
@@ -790,73 +853,24 @@ function closeGoalSettingsModal() {
 
 function handleSaveGoalSettings(e) {
   e.preventDefault();
-  const goal = appState.goals[appState.activeGoal];
-  if (!goal) return;
-
-  goal.title = document.getElementById('editGoalTitleInput').value.trim();
-  goal.target = parseFloat(document.getElementById('editGoalTargetInput').value) || goal.target;
-  goal.deadline = document.getElementById('editGoalDeadlineInput').value;
+  const p = getCurrentProfile();
+  p.missionTarget = parseFloat(document.getElementById('editGoalTargetInput').value) || 80000;
+  p.deadline = document.getElementById('editGoalDeadlineInput').value;
 
   saveLocalState();
   closeGoalSettingsModal();
   renderApp();
 }
 
-function openSyncModal() {
-  switchTab('sync');
-}
-
-function generateSyncQRCode() {
-  try {
-    const canvas = document.getElementById('qrCanvas');
-    if (!canvas) return;
-
-    const baseUrl = window.location.origin + window.location.pathname;
-    const minimalState = {
-      activeGoal: appState.activeGoal,
-      totalSaved: appState.totalSaved,
-      currency: appState.currency,
-      tasks: appState.tasks,
-      transactions: appState.transactions,
-      syncRoom: appState.syncRoom
-    };
-    const encoded = encodeURIComponent(JSON.stringify(minimalState));
-    // Embed both room code AND data fallback
-    const mobileUrl = `${baseUrl}?room=${appState.syncRoom}#import=${encoded}`;
-
-    new QRious({
-      element: canvas,
-      value: mobileUrl,
-      size: 200,
-      background: '#ffffff',
-      foreground: '#0b0f19',
-      level: 'M'
-    });
-  } catch (e) {
-    console.error('QR code error:', e);
-  }
-}
-
-function copyMobileSyncLink() {
-  const baseUrl = window.location.origin + window.location.pathname;
-  const minimalState = {
-    activeGoal: appState.activeGoal,
-    totalSaved: appState.totalSaved,
-    currency: appState.currency,
-    tasks: appState.tasks,
-    transactions: appState.transactions,
-    syncRoom: appState.syncRoom
-  };
-  const encoded = encodeURIComponent(JSON.stringify(minimalState));
-  const mobileUrl = `${baseUrl}?room=${appState.syncRoom}#import=${encoded}`;
-
-  navigator.clipboard.writeText(mobileUrl).then(() => {
-    const btnText = document.getElementById('copyLinkBtnText');
-    btnText.textContent = 'Copied to Clipboard!';
-    setTimeout(() => {
-      btnText.textContent = 'Copy Shareable Link';
-    }, 2500);
-  });
+function copyGoaPackingList() {
+  const text = `🌴 Goa Trip Essentials (Mission 80K):
+1. Driving License for Scooty rental
+2. Sunglasses & SPF 50+ Sunscreen
+3. Linen shirts & quick-dry shorts
+4. Waterproof phone bag
+5. Power bank for coastal rides
+6. Cash & UPI combo for beach shacks`;
+  navigator.clipboard.writeText(text).then(() => alert('Goa Checklist copied!'));
 }
 
 function exportDataJson() {
@@ -864,7 +878,7 @@ function exportDataJson() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `goalquest-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `mission-80k-squad-backup-${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -877,10 +891,12 @@ function importDataJson(e) {
   reader.onload = (event) => {
     try {
       const parsed = JSON.parse(event.target.result);
-      appState = { ...DEFAULT_STATE, ...parsed };
-      saveLocalState();
-      renderApp();
-      alert('Data successfully imported!');
+      if (parsed.profiles) {
+        appState = { ...appState, ...parsed };
+        saveLocalState();
+        renderApp();
+        alert('All profiles successfully restored from backup!');
+      }
     } catch (err) {
       alert('Invalid backup file.');
     }
@@ -888,73 +904,57 @@ function importDataJson(e) {
   reader.readAsText(file);
 }
 
-function runQuizRecommendation(choice) {
-  const box = document.getElementById('quizResultBox');
-  box.classList.remove('hidden');
-
-  if (choice === 'work') {
-    box.innerHTML = `
-      <div class="space-y-2">
-        <span class="font-bold text-sm text-sky-300 block">🏆 Recommendation: MacBook Pro M-Series</span>
-        <p class="text-gray-300">
-          A laptop is an <strong>investment asset</strong> that directly increases your earning potential, speeds up your coding/creative work, and lasts 5-7 years. The ROI on a MacBook Pro will pay for 3 Goa trips and 2 iPhones in the future!
-        </p>
-        <button onclick="setActiveGoal('macbook')" class="mt-2 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition">
-          Set MacBook Pro as Active Quest
-        </button>
-      </div>
-    `;
-  } else if (choice === 'burnout') {
-    box.innerHTML = `
-      <div class="space-y-2">
-        <span class="font-bold text-sm text-emerald-300 block">🏆 Recommendation: Trip to Goa</span>
-        <p class="text-gray-300">
-          Burnout kills productivity. At ~₹35,000, Goa is the <strong>most cost-effective happiness boost</strong> you can get. You'll make lifelong memories with friends, experience sunsets, and return with refreshed energy to earn for the next gadget!
-        </p>
-        <button onclick="setActiveGoal('goa')" class="mt-2 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition">
-          Set Goa Trip as Active Quest
-        </button>
-      </div>
-    `;
-  } else {
-    box.innerHTML = `
-      <div class="space-y-2">
-        <span class="font-bold text-sm text-purple-300 block">🏆 Recommendation: iPhone Newest Pro</span>
-        <p class="text-gray-300">
-          Your smartphone is in your hand 5 to 7 hours every single day. If your current phone has poor battery life, lagging apps, or a cracked screen, upgrading your daily driver gives immediate quality of life improvements.
-        </p>
-        <button onclick="setActiveGoal('iphone')" class="mt-2 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition">
-          Set iPhone as Active Quest
-        </button>
-      </div>
-    `;
-  }
-}
-
-function copyGoaPackingList() {
-  const checklist = `🌴 Goa Trip Essentials:
-1. Valid Driving License (for Scooty/Thar rental)
-2. Sunglasses & SPF 50+ Sunscreen
-3. Linen shirts & quick-dry shorts
-4. Waterproof phone pouch (for water sports/Baga beach)
-5. Power bank for full-day scooty trips
-6. UPI / Cash combo (shacks prefer UPI, parking needs cash)
-7. Playlist downloaded offline for coastal drives!`;
-
-  navigator.clipboard.writeText(checklist).then(() => {
-    alert('Goa Checklist copied to clipboard!');
-  });
-}
-
 function escapeHtml(str) {
   if (!str) return '';
-  return str.replace(/[&<>"']/g, function(m) {
-    return {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }[m];
-  });
+  return str.replace(/[&<>"']/g, m => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[m]);
+}
+
+// ===================================================================
+// LUSION / NOOMO AMBIENT GENERATIVE CANVAS (Zero overhead, smooth 60fps)
+// ===================================================================
+function initAmbientCanvas() {
+  const canvas = document.getElementById('ambientCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let width, height;
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Subtle luminous floating orbs
+  const orbs = [
+    { x: width * 0.2, y: height * 0.3, radius: 240, vx: 0.25, vy: 0.15, color: 'rgba(99, 102, 241, 0.08)' },
+    { x: width * 0.8, y: height * 0.6, radius: 320, vx: -0.2, vy: -0.25, color: 'rgba(14, 165, 233, 0.06)' },
+    { x: width * 0.5, y: height * 0.85, radius: 280, vx: 0.18, vy: -0.12, color: 'rgba(16, 185, 129, 0.05)' }
+  ];
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    orbs.forEach(orb => {
+      orb.x += orb.vx;
+      orb.y += orb.vy;
+
+      if (orb.x < -100 || orb.x > width + 100) orb.vx *= -1;
+      if (orb.y < -100 || orb.y > height + 100) orb.vy *= -1;
+
+      const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
+      grad.addColorStop(0, orb.color);
+      grad.addColorStop(1, 'transparent');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
 }
