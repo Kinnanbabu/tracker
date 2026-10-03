@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>GoalQuest - iPhone vs MacBook vs Goa Planner</title>
+  <title>MISSION 80K - Custom Goal & Habit Tracker</title>
   
   <!-- Web App & Mobile Optimization -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="GoalQuest">
-  <meta name="theme-color" content="#0b0f19">
+  <meta name="apple-mobile-web-app-title" content="MISSION 80K">
+  <meta name="theme-color" content="#05070d">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
 
   <!-- Tailwind CSS -->
@@ -20,25 +20,21 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
+            void: '#05070d',
+            kinnan: {
+              400: '#818cf8',
               500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
+              600: '#4f46e5'
             },
-            goa: {
-              400: '#34d399',
-              500: '#10b981',
-              600: '#059669',
-            },
-            macbook: {
+            madhav: {
               400: '#38bdf8',
               500: '#0284c7',
+              600: '#0369a1'
             },
-            iphone: {
-              400: '#c084fc',
-              500: '#a855f7',
+            allen: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669'
             }
           }
         }
@@ -48,64 +44,224 @@
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Canvas Confetti for Celebration -->
+  <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <!-- QRious for Instant Mobile Sync via QR Code -->
+  <!-- QRious for Instant Mobile Sync -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-  <!-- Supabase Client for optional private cloud sync -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#0b0f19] text-gray-100 flex flex-col min-h-screen">
+<body class="bg-[#05070d] text-slate-100 min-h-screen flex flex-col grid-mesh-bg relative">
 
-  <!-- Top Ambient Glow -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-indigo-600/20 via-purple-600/10 to-transparent blur-3xl pointer-events-none -z-10 animate-subtle-glow"></div>
+  <!-- Interactive Ambient Canvas (Lusion / Noomo vibe) -->
+  <canvas id="ambientCanvas"></canvas>
 
-  <!-- Navbar -->
-  <header class="sticky top-0 z-40 border-b border-white/10 bg-[#0b0f19]/80 backdrop-blur-md px-4 lg:px-8 py-3 transition-all">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2">
+  <!-- Top Ambient Glow Aura -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-indigo-500/15 via-purple-500/8 to-transparent blur-3xl pointer-events-none -z-10"></div>
+
+  <!-- ================================================================= -->
+  <!-- PROFILE GATE SCREEN (Shown on initial load or profile switch)     -->
+  <!-- ================================================================= -->
+  <div id="profileGateScreen" class="fixed inset-0 z-50 bg-[#05070d]/95 backdrop-blur-2xl flex flex-col justify-between p-6 sm:p-12 overflow-y-auto transition-opacity duration-500">
+    <div class="max-w-5xl w-full mx-auto my-auto space-y-10">
       
-      <!-- Brand & Active Quest -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-          <i data-lucide="target" class="w-5 h-5 text-white"></i>
+      <!-- Header -->
+      <div class="text-center space-y-3">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full lusion-pill text-[11px] font-mono tracking-widest text-indigo-400 uppercase">
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+          <span>SELECT OPERATIVE // UPSTASH CLOUD SYNCED</span>
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-              GoalQuest
-            </h1>
-            <span class="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              Vercel Ready
+        <h1 class="text-4xl sm:text-6xl font-black tracking-tight font-display gradient-text-mission">
+          MISSION 80K
+        </h1>
+        <p class="text-sm sm:text-base text-slate-400 max-w-lg mx-auto font-light">
+          Track personal savings, daily discipline ticks, and the race to ₹80,000 for iPhone, MacBook Pro, or Goa.
+        </p>
+      </div>
+
+      <!-- 3 Profile Cards (Kinnan, Madhav, Allen Joy) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        
+        <!-- Profile 1: Kinnan -->
+        <div onclick="selectProfile('kinnan')" class="profile-card-gate lusion-card rounded-3xl p-7 cursor-pointer group hover:border-indigo-500/60 bg-gradient-to-b from-indigo-950/20 to-transparent">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              OPERATIVE 01
+            </span>
+            <span class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-300 group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition duration-300">
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </span>
           </div>
-          <p id="headerGoalSubtext" class="text-xs text-gray-400 hidden sm:block">
-            Tracking: iPhone vs MacBook vs Goa
-          </p>
+
+          <div class="mt-6 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-2xl shadow-lg shadow-indigo-500/30">
+              ⚡
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold font-display text-white group-hover:text-indigo-300 transition">Kinnan</h2>
+              <span id="gateReward-kinnan" class="text-xs text-indigo-400 font-medium">Target: iPhone Newest Pro</span>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-5 border-t border-white/5 space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono-nums">
+              <span class="text-slate-400">Mission Progress</span>
+              <span id="gatePercent-kinnan" class="text-indigo-400 font-bold">19.5%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
+              <div id="gateBar-kinnan" class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500" style="width: 19.5%;"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono-nums pt-1">
+              <span id="gateSaved-kinnan">₹15,600</span>
+              <span>/ ₹80,000</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile 2: Madhav -->
+        <div onclick="selectProfile('madhav')" class="profile-card-gate lusion-card rounded-3xl p-7 cursor-pointer group hover:border-sky-500/60 bg-gradient-to-b from-sky-950/20 to-transparent">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">
+              OPERATIVE 02
+            </span>
+            <span class="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-300 group-hover:scale-110 group-hover:bg-sky-500 group-hover:text-white transition duration-300">
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </span>
+          </div>
+
+          <div class="mt-6 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-500 flex items-center justify-center text-2xl shadow-lg shadow-sky-500/30">
+              💻
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold font-display text-white group-hover:text-sky-300 transition">Madhav</h2>
+              <span id="gateReward-madhav" class="text-xs text-sky-400 font-medium">Target: MacBook Pro M-Series</span>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-5 border-t border-white/5 space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono-nums">
+              <span class="text-slate-400">Mission Progress</span>
+              <span id="gatePercent-madhav" class="text-sky-400 font-bold">27.5%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
+              <div id="gateBar-madhav" class="h-full rounded-full bg-gradient-to-r from-sky-500 to-cyan-400" style="width: 27.5%;"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono-nums pt-1">
+              <span id="gateSaved-madhav">₹22,000</span>
+              <span>/ ₹80,000</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile 3: Allen Joy -->
+        <div onclick="selectProfile('allen')" class="profile-card-gate lusion-card rounded-3xl p-7 cursor-pointer group hover:border-emerald-500/60 bg-gradient-to-b from-emerald-950/20 to-transparent">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              OPERATIVE 03
+            </span>
+            <span class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-white transition duration-300">
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </span>
+          </div>
+
+          <div class="mt-6 flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/30">
+              🏖️
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold font-display text-white group-hover:text-emerald-300 transition">Allen Joy</h2>
+              <span id="gateReward-allen" class="text-xs text-emerald-400 font-medium">Target: Trip to Goa</span>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-5 border-t border-white/5 space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono-nums">
+              <span class="text-slate-400">Mission Progress</span>
+              <span id="gatePercent-allen" class="text-emerald-400 font-bold">23.1%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
+              <div id="gateBar-allen" class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400" style="width: 23.1%;"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono-nums pt-1">
+              <span id="gateSaved-allen">₹18,500</span>
+              <span>/ ₹80,000</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Squad Combined Progress Banner -->
+      <div class="max-w-4xl mx-auto p-5 rounded-2xl lusion-panel border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-lg">
+            ⚡
+          </div>
+          <div>
+            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Combined Squad Goal</span>
+            <span class="text-sm font-bold text-white font-mono-nums">
+              Total Raised: <strong id="gateSquadTotal" class="text-emerald-400">₹56,100</strong> / ₹240,000
+            </span>
+          </div>
+        </div>
+        <div class="text-xs text-slate-400 flex items-center gap-2">
+          <i data-lucide="cloud" class="w-4 h-4 text-emerald-400"></i>
+          <span>Synced with Upstash Redis</span>
         </div>
       </div>
 
-      <!-- Controls: Currency, Sync Indicator, Mobile QR -->
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MAIN APP NAVBAR                                                   -->
+  <!-- ================================================================= -->
+  <header class="sticky top-0 z-40 border-b border-white/10 bg-[#05070d]/80 backdrop-blur-xl px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Brand & Mission Tag -->
+      <div class="flex items-center gap-3">
+        <button onclick="openProfileGate()" title="Switch Profile" class="flex items-center gap-2 p-1.5 rounded-xl lusion-pill hover:border-indigo-500/50 transition group">
+          <div id="navAvatar" class="w-8 h-8 rounded-lg bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center justify-center text-sm font-bold">
+            ⚡
+          </div>
+          <div class="text-left hidden sm:block pr-2">
+            <span id="navProfileName" class="text-xs font-bold text-white block group-hover:text-indigo-300 transition">Kinnan</span>
+            <span class="text-[9px] font-mono text-slate-400 block uppercase">Switch Profile ▾</span>
+          </div>
+        </button>
+
+        <div class="h-6 w-px bg-white/10 hidden sm:block"></div>
+
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-base tracking-tight font-display gradient-text-mission">MISSION 80K</span>
+          <span class="hidden md:inline text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-white/5 text-slate-400 border border-white/10">
+            Upstash Cloud
+          </span>
+        </div>
+      </div>
+
+      <!-- Controls: Currency, Cloud Status, QR Mobile -->
       <div class="flex items-center gap-2">
         
-        <!-- Currency Toggle -->
-        <button id="currencyBtn" onclick="toggleCurrency()" title="Switch Currency" class="glass-pill text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-gray-300 hover:text-white transition">
+        <!-- Currency Switcher -->
+        <button id="currencyBtn" onclick="toggleCurrency()" title="Switch Currency" class="lusion-pill text-xs px-2.5 py-1.5 rounded-lg flex items-center gap-1 text-slate-300 hover:text-white transition">
           <span id="currencySymbol" class="font-bold font-mono">₹</span>
-          <span id="currencyLabel" class="text-[11px] text-gray-400">INR</span>
+          <span id="currencyLabel" class="text-[10px] text-slate-400">INR</span>
         </button>
 
-        <!-- Cloud Sync Status Pill -->
-        <button onclick="openSyncModal()" class="glass-pill text-xs px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 transition group" id="syncStatusBadge">
+        <!-- Upstash Cloud Sync Pill -->
+        <button onclick="switchTab('sync')" class="lusion-pill text-xs px-3 py-1.5 rounded-lg flex items-center gap-2 hover:bg-white/10 transition group" id="syncStatusBadge">
           <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse"></span>
-          <span id="syncStatusText" class="text-xs font-medium text-gray-300 group-hover:text-white">Cloud Synced</span>
-          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-gray-400 group-hover:rotate-180 transition duration-500"></i>
+          <span id="syncStatusText" class="text-xs font-medium text-slate-300 group-hover:text-white">Cloud Synced</span>
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-slate-400 group-hover:rotate-180 transition duration-500"></i>
         </button>
 
-        <!-- Mobile Transfer / QR Button -->
-        <button onclick="openMobileQRModal()" class="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-200 hover:bg-indigo-600/50 transition">
+        <!-- Mobile Transfer QR Button -->
+        <button onclick="openMobileQRModal()" class="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/40 transition">
           <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
-          <span>Open on Phone</span>
+          <span>Phone</span>
         </button>
 
       </div>
@@ -113,81 +269,87 @@
   </header>
 
   <!-- Desktop Tab Navigation -->
-  <div class="hidden md:block border-b border-white/5 bg-[#101524]/60 backdrop-blur-sm">
+  <div class="hidden md:block border-b border-white/5 bg-[#090d18]/60 backdrop-blur-sm">
     <div class="max-w-7xl mx-auto px-4 lg:px-8 flex items-center space-x-1 py-1.5">
       <button onclick="switchTab('tracker')" id="nav-btn-tracker" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 bg-indigo-600/20 text-indigo-300 border border-indigo-500/30">
-        <i data-lucide="wallet" class="w-4 h-4"></i>
-        <span>Goals & Savings</span>
+        <i data-lucide="target" class="w-4 h-4"></i>
+        <span>My Mission 80K</span>
       </button>
-      <button onclick="switchTab('planner')" id="nav-btn-planner" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-gray-400 hover:text-gray-200 hover:bg-white/5">
+      <button onclick="switchTab('planner')" id="nav-btn-planner" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-white/5">
         <i data-lucide="check-square" class="w-4 h-4"></i>
-        <span>Daily Planner & Ticks</span>
+        <span>Daily Discipline & Ticks</span>
         <span id="todayTasksPill" class="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">0/5</span>
       </button>
-      <button onclick="switchTab('battle')" id="nav-btn-battle" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-gray-400 hover:text-gray-200 hover:bg-white/5">
-        <i data-lucide="scales" class="w-4 h-4"></i>
-        <span>The Decision Battle</span>
+      <button onclick="switchTab('squad')" id="nav-btn-squad" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-white/5">
+        <i data-lucide="trophy" class="w-4 h-4"></i>
+        <span>Squad Race (Leaderboard)</span>
       </button>
-      <button onclick="switchTab('blueprints')" id="nav-btn-blueprints" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-gray-400 hover:text-gray-200 hover:bg-white/5">
+      <button onclick="switchTab('specs')" id="nav-btn-specs" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-white/5">
         <i data-lucide="compass" class="w-4 h-4"></i>
-        <span>Goa & Gear Blueprints</span>
+        <span>Gear & Goa Blueprints</span>
       </button>
-      <button onclick="switchTab('sync')" id="nav-btn-sync" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-gray-400 hover:text-gray-200 hover:bg-white/5 ml-auto">
+      <button onclick="switchTab('sync')" id="nav-btn-sync" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 ml-auto">
         <i data-lucide="cloud" class="w-4 h-4"></i>
-        <span>Vercel & Sync Setup</span>
+        <span>Cloud & Vercel</span>
       </button>
     </div>
   </div>
 
-  <!-- Main Content Area -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 mb-20 md:mb-8">
+  <!-- ================================================================= -->
+  <!-- MAIN CONTENT AREA                                                 -->
+  <!-- ================================================================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 mb-20 md:mb-8 relative z-10">
 
     <!-- ========================================== -->
-    <!-- TAB 1: GOALS & SAVINGS PROGRESS TRACKER   -->
+    <!-- TAB 1: PERSONAL MISSION 80K TRACKER        -->
     <!-- ========================================== -->
     <div id="tab-tracker" class="tab-pane space-y-6">
 
-      <!-- Active Goal Banner / Highlight Hero -->
-      <div class="relative overflow-hidden rounded-2xl glass-panel p-6 sm:p-8 border border-white/10 shadow-2xl">
-        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <!-- Hero Banner for Mission 80K -->
+      <div class="relative overflow-hidden rounded-3xl lusion-panel p-6 sm:p-10 border border-white/10 shadow-2xl">
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           
-          <div class="space-y-3 max-w-2xl">
+          <div class="space-y-4 max-w-2xl">
             <div class="flex items-center gap-2 flex-wrap">
-              <span id="activeGoalBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                <span id="activeGoalCategory">Active Priority Goal</span>
+              <span id="heroOperativeBadge" class="text-xs font-mono uppercase px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5">
+                <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+                <span id="heroOperativeName">Operative: Kinnan</span>
               </span>
-              <span id="deadlineBadge" class="text-xs font-medium px-2.5 py-1 rounded-full bg-white/5 text-gray-400 border border-white/10">
-                Target: Next 90 Days
+              <span class="text-xs font-mono uppercase px-3 py-1 rounded-full bg-white/5 text-slate-400 border border-white/10">
+                Primary Quest: ₹80,000
               </span>
             </div>
 
-            <h2 id="activeGoalTitle" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
-              Trip to Goa (Sun & Freedom)
-            </h2>
-            <p id="activeGoalSubtitle" class="text-sm sm:text-base text-gray-300">
-              Unwind on Palolem & Anjuna beaches, scooty sunsets, night markets, and sea breezes.
-            </p>
+            <div class="space-y-1">
+              <h2 class="text-3xl sm:text-5xl font-black tracking-tight font-display gradient-text-mission">
+                MISSION 80K
+              </h2>
+              <p id="heroRewardSubtext" class="text-sm sm:text-base text-slate-300 font-light flex items-center gap-2">
+                <span>Allocated For:</span>
+                <strong id="heroRewardTitle" class="text-indigo-300 font-semibold">iPhone Newest Pro Max</strong>
+                <button onclick="openRewardModal()" class="text-xs text-slate-400 hover:text-white underline ml-1">Change</button>
+              </p>
+            </div>
           </div>
 
           <!-- Total Money Counter & Fast Deposit Action -->
-          <div class="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-4 p-4 rounded-xl bg-black/40 border border-white/5">
+          <div class="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-4 p-5 rounded-2xl bg-black/50 border border-white/5 shadow-inner">
             <div>
-              <span class="text-xs text-gray-400 uppercase tracking-wider block">Total Saved</span>
-              <div class="flex items-baseline gap-2">
-                <span id="activeSavedAmount" class="text-3xl sm:text-4xl font-extrabold font-mono-nums text-emerald-400">
-                  ₹15,000
+              <span class="text-[11px] font-mono text-slate-400 uppercase tracking-widest block">Total Saved for Mission</span>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span id="heroSavedAmount" class="text-3xl sm:text-5xl font-extrabold font-mono-nums gradient-text-emerald">
+                  ₹15,600
                 </span>
-                <span class="text-sm text-gray-400">/ <span id="activeTargetAmount">₹35,000</span></span>
+                <span class="text-sm font-mono text-slate-400">/ <span id="heroTargetAmount">₹80,000</span></span>
               </div>
             </div>
             
             <div class="flex items-center gap-2 w-full sm:w-auto">
-              <button onclick="openDepositModal()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold text-sm shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition active:scale-95">
+              <button onclick="openDepositModal()" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold text-sm shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition active:scale-95">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                <span>Add Savings</span>
+                <span>Log Savings</span>
               </button>
-              <button onclick="openGoalSettingsModal()" title="Edit Target" class="p-2.5 rounded-xl glass-pill text-gray-300 hover:text-white transition">
+              <button onclick="openGoalSettingsModal()" title="Customize Target" class="p-3 rounded-xl lusion-pill text-slate-300 hover:text-white transition">
                 <i data-lucide="sliders" class="w-4 h-4"></i>
               </button>
             </div>
@@ -195,175 +357,114 @@
 
         </div>
 
-        <!-- Big Visual Progress Bar -->
-        <div class="mt-6 pt-6 border-t border-white/5 space-y-2">
-          <div class="flex items-center justify-between text-xs text-gray-400 font-medium">
-            <span class="flex items-center gap-1.5 text-gray-300">
+        <!-- Big Visual Shimmer Progress Bar -->
+        <div class="mt-8 pt-6 border-t border-white/5 space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono-nums">
+            <span class="flex items-center gap-2 text-slate-300 font-medium">
               <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
-              <span>Progress: <strong id="progressPercentageText" class="text-emerald-400 font-mono-nums">42.8%</strong></span>
+              <span>Completion: <strong id="heroProgressPercentage" class="text-emerald-400 font-bold">19.5%</strong></span>
             </span>
-            <span id="remainingAmountText" class="font-mono-nums text-gray-300">
-              ₹20,000 remaining
+            <span id="heroRemainingText" class="text-slate-400">
+              ₹64,400 to unlock
             </span>
           </div>
 
-          <div class="relative w-full h-4 bg-gray-900/80 rounded-full overflow-hidden p-0.5 border border-white/10">
-            <div id="activeProgressBar" class="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 transition-all duration-700 relative shimmer-bar" style="width: 42.8%;"></div>
+          <div class="relative w-full h-4 bg-slate-900/90 rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div id="heroProgressBar" class="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 transition-all duration-700 relative shimmer-active" style="width: 19.5%;"></div>
           </div>
 
           <!-- Milestones Checkpoints -->
-          <div class="grid grid-cols-4 text-center text-[10px] sm:text-xs pt-1 text-gray-400">
-            <div class="flex flex-col items-center">
-              <span class="font-mono">25%</span>
-              <span class="text-gray-400">🌱 Started</span>
-            </div>
-            <div class="flex flex-col items-center">
-              <span class="font-mono">50%</span>
-              <span class="text-gray-400">⚡ Halfway</span>
-            </div>
-            <div class="flex flex-col items-center">
-              <span class="font-mono">75%</span>
-              <span class="text-gray-400">🔥 Final Push</span>
-            </div>
-            <div class="flex flex-col items-center">
-              <span class="font-mono">100%</span>
-              <span class="text-emerald-400 font-semibold">🎉 UNLOCKED!</span>
-            </div>
+          <div class="grid grid-cols-4 text-center text-[10px] sm:text-xs pt-1 text-slate-400 font-mono">
+            <div><span>₹20,000</span> (25%) 🌱</div>
+            <div><span>₹40,000</span> (50%) ⚡</div>
+            <div><span>₹60,000</span> (75%) 🔥</div>
+            <div class="text-emerald-400 font-bold"><span>₹80,000</span> (100%) 🏆</div>
           </div>
         </div>
 
         <!-- Smart Savings Pace Calculator -->
         <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-            <span class="text-[11px] text-gray-400 block">Daily Target (to reach in 60d)</span>
-            <span id="paceDaily60" class="text-sm font-bold text-gray-200 font-mono-nums">₹333 / day</span>
+          <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5">
+            <span class="text-[10px] font-mono text-slate-400 block uppercase">Pace to Reach in 60 Days</span>
+            <span id="paceDaily60" class="text-sm font-bold text-slate-200 font-mono-nums mt-0.5 block">₹1,073 / day</span>
           </div>
-          <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-            <span class="text-[11px] text-gray-400 block">Weekly Target (to reach in 90d)</span>
-            <span id="paceWeekly" class="text-sm font-bold text-gray-200 font-mono-nums">₹1,555 / week</span>
+          <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5">
+            <span class="text-[10px] font-mono text-slate-400 block uppercase">Pace to Reach in 90 Days</span>
+            <span id="paceWeekly" class="text-sm font-bold text-slate-200 font-mono-nums mt-0.5 block">₹5,008 / week</span>
           </div>
-          <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5">
-            <span class="text-[11px] text-gray-400 block">Current Daily Pace</span>
-            <span id="currentPaceText" class="text-sm font-bold text-indigo-300 font-mono-nums">~42 days left</span>
+          <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5">
+            <span class="text-[10px] font-mono text-slate-400 block uppercase">Estimated Days Left (@ ₹500/d)</span>
+            <span id="currentPaceText" class="text-sm font-bold text-indigo-300 font-mono-nums mt-0.5 block">~128 days</span>
           </div>
         </div>
 
       </div>
 
-      <!-- The 3 Contenders: Cards to Switch or Compare -->
+      <!-- Profile Target Allocation Choices -->
       <div>
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base sm:text-lg font-bold text-gray-200 flex items-center gap-2">
-            <i data-lucide="layers" class="w-5 h-5 text-indigo-400"></i>
-            <span>The 3 Contenders (Click to Set Active Quest)</span>
+          <h3 class="text-base sm:text-lg font-bold font-display text-slate-200 flex items-center gap-2">
+            <i data-lucide="award" class="w-5 h-5 text-indigo-400"></i>
+            <span>Where is your ₹80,000 going?</span>
           </h3>
-          <span class="text-xs text-gray-400 hidden sm:inline">You can switch anytime or save to a shared pool</span>
+          <span class="text-xs text-slate-400 hidden sm:inline">Select what this ₹80,000 will purchase</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="contendersList">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           
-          <!-- Contender 1: iPhone -->
-          <div id="card-iphone" onclick="setActiveGoal('iphone')" class="cursor-pointer glass-card rounded-2xl p-5 border border-purple-500/20 hover:border-purple-400/50 transition relative overflow-hidden group">
-            <div class="flex items-start justify-between">
-              <div class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-xl">
-                📱
-              </div>
-              <span id="iphoneActiveBadge" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+          <!-- Reward 1: iPhone -->
+          <div onclick="setChosenReward('iphone')" id="rewardCard-iphone" class="cursor-pointer lusion-card rounded-2xl p-5 border border-purple-500/20 hover:border-purple-400/50 transition relative group">
+            <div class="flex items-center justify-between">
+              <span class="text-2xl">📱</span>
+              <span id="rewardBadge-iphone" class="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/5 text-slate-400">
                 Select
               </span>
             </div>
-            <div class="mt-4">
-              <h4 class="font-bold text-lg text-white group-hover:text-purple-300 transition">iPhone Newest Pro</h4>
-              <p class="text-xs text-gray-400 mt-1 line-clamp-2">Flagship camera, 120Hz OLED, titanium body & daily companion.</p>
-              
-              <div class="mt-4 pt-3 border-t border-white/5 flex items-baseline justify-between">
-                <div>
-                  <span class="text-[10px] text-gray-400 block uppercase">Target Price</span>
-                  <span id="iphonePriceDisplay" class="text-base font-bold font-mono-nums text-purple-300">₹1,34,900</span>
-                </div>
-                <div class="text-right">
-                  <span class="text-[10px] text-gray-400 block uppercase">Saved</span>
-                  <span id="iphoneSavedDisplay" class="text-xs font-mono-nums text-gray-300">₹15,000 (11%)</span>
-                </div>
-              </div>
-
-              <div class="mt-2 w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                <div id="iphoneProgressBar" class="h-full bg-purple-500 rounded-full" style="width: 11%;"></div>
-              </div>
+            <div class="mt-3">
+              <h4 class="font-bold text-base text-white group-hover:text-purple-300 transition">iPhone Newest Pro Max</h4>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">Flagship camera, 120Hz display, titanium finish & 24/7 companion.</p>
             </div>
           </div>
 
-          <!-- Contender 2: MacBook Pro -->
-          <div id="card-macbook" onclick="setActiveGoal('macbook')" class="cursor-pointer glass-card rounded-2xl p-5 border border-sky-500/20 hover:border-sky-400/50 transition relative overflow-hidden group">
-            <div class="flex items-start justify-between">
-              <div class="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-xl">
-                💻
-              </div>
-              <span id="macbookActiveBadge" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">
+          <!-- Reward 2: MacBook Pro -->
+          <div onclick="setChosenReward('macbook')" id="rewardCard-macbook" class="cursor-pointer lusion-card rounded-2xl p-5 border border-sky-500/20 hover:border-sky-400/50 transition relative group">
+            <div class="flex items-center justify-between">
+              <span class="text-2xl">💻</span>
+              <span id="rewardBadge-macbook" class="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/5 text-slate-400">
                 Select
               </span>
             </div>
-            <div class="mt-4">
-              <h4 class="font-bold text-lg text-white group-hover:text-sky-300 transition">MacBook Pro M-Series</h4>
-              <p class="text-xs text-gray-400 mt-1 line-clamp-2">Supercharged productivity, coding powerhouse, 20h battery & career asset.</p>
-              
-              <div class="mt-4 pt-3 border-t border-white/5 flex items-baseline justify-between">
-                <div>
-                  <span class="text-[10px] text-gray-400 block uppercase">Target Price</span>
-                  <span id="macbookPriceDisplay" class="text-base font-bold font-mono-nums text-sky-300">₹1,69,900</span>
-                </div>
-                <div class="text-right">
-                  <span class="text-[10px] text-gray-400 block uppercase">Saved</span>
-                  <span id="macbookSavedDisplay" class="text-xs font-mono-nums text-gray-300">₹15,000 (8.8%)</span>
-                </div>
-              </div>
-
-              <div class="mt-2 w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                <div id="macbookProgressBar" class="h-full bg-sky-500 rounded-full" style="width: 8.8%;"></div>
-              </div>
+            <div class="mt-3">
+              <h4 class="font-bold text-base text-white group-hover:text-sky-300 transition">MacBook Pro M-Series</h4>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">Coding beast, video powerhouse, 22-hour battery life & career builder.</p>
             </div>
           </div>
 
-          <!-- Contender 3: Trip to Goa -->
-          <div id="card-goa" onclick="setActiveGoal('goa')" class="cursor-pointer glass-card rounded-2xl p-5 border border-emerald-500/40 bg-emerald-950/20 hover:border-emerald-400/60 transition relative overflow-hidden group">
-            <div class="flex items-start justify-between">
-              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-xl">
-                🏖️
-              </div>
-              <span id="goaActiveBadge" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-500/50 flex items-center gap-1">
-                <i data-lucide="check" class="w-3 h-3"></i> ACTIVE
+          <!-- Reward 3: Goa Trip -->
+          <div onclick="setChosenReward('goa')" id="rewardCard-goa" class="cursor-pointer lusion-card rounded-2xl p-5 border border-emerald-500/20 hover:border-emerald-400/50 transition relative group">
+            <div class="flex items-center justify-between">
+              <span class="text-2xl">🏖️</span>
+              <span id="rewardBadge-goa" class="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/5 text-slate-400">
+                Select
               </span>
             </div>
-            <div class="mt-4">
-              <h4 class="font-bold text-lg text-white group-hover:text-emerald-300 transition">Trip to Goa</h4>
-              <p class="text-xs text-gray-400 mt-1 line-clamp-2">Sunsets, beach cafes, scooter rides, friends & mental refreshment.</p>
-              
-              <div class="mt-4 pt-3 border-t border-white/5 flex items-baseline justify-between">
-                <div>
-                  <span class="text-[10px] text-gray-400 block uppercase">Budget</span>
-                  <span id="goaPriceDisplay" class="text-base font-bold font-mono-nums text-emerald-300">₹35,000</span>
-                </div>
-                <div class="text-right">
-                  <span class="text-[10px] text-gray-400 block uppercase">Saved</span>
-                  <span id="goaSavedDisplay" class="text-xs font-mono-nums text-gray-300">₹15,000 (42.8%)</span>
-                </div>
-              </div>
-
-              <div class="mt-2 w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                <div id="goaProgressBar" class="h-full bg-emerald-500 rounded-full" style="width: 42.8%;"></div>
-              </div>
+            <div class="mt-3">
+              <h4 class="font-bold text-base text-white group-hover:text-emerald-300 transition">Epic Goa Trip</h4>
+              <p class="text-xs text-slate-400 mt-1 line-clamp-2">Sunsets, beach cafes, scooter rides, friends & unforgettable memories.</p>
             </div>
           </div>
 
         </div>
       </div>
 
-      <!-- Savings Activity Log -->
-      <div class="glass-panel rounded-2xl p-5 border border-white/10">
+      <!-- Recent Transactions for Current Profile -->
+      <div class="lusion-panel rounded-2xl p-5 border border-white/10">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <i data-lucide="history" class="w-4 h-4 text-gray-400"></i>
-            <h4 class="font-bold text-sm text-gray-200">Recent Savings Activity</h4>
+            <i data-lucide="history" class="w-4 h-4 text-slate-400"></i>
+            <h4 class="font-bold text-sm text-slate-200">
+              <span id="profileTxTitle">Kinnan's Savings History</span>
+            </h4>
           </div>
           <button onclick="openDepositModal()" class="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -372,7 +473,7 @@
         </div>
 
         <div id="transactionsList" class="space-y-2">
-          <!-- Dynamically populated transaction entries -->
+          <!-- Dynamically loaded per active profile -->
         </div>
       </div>
 
@@ -383,30 +484,30 @@
     <!-- ========================================== -->
     <div id="tab-planner" class="tab-pane hidden space-y-6">
       
-      <!-- Planner Header & Date Selector -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-panel p-5 rounded-2xl border border-white/10">
+      <!-- Planner Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 lusion-panel p-5 rounded-2xl border border-white/10">
         <div>
           <div class="flex items-center gap-2">
-            <h2 class="text-xl sm:text-2xl font-extrabold text-white">Daily Planner & Quests</h2>
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-              <i data-lucide="flame" class="w-3 h-3"></i>
-              <span id="streakCount">3 Day Streak</span>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-white font-display">Daily Discipline Planner</h2>
+            <span class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+              <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+              <span id="streakCount">4 Day Streak</span>
             </span>
           </div>
-          <p class="text-xs sm:text-sm text-gray-400 mt-1">
-            Tick off your daily financial & life habits. Every tick brings your dream closer!
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Daily ticks stored in your profile and synced to Upstash Cloud in real time.
           </p>
         </div>
 
         <!-- Date navigation -->
         <div class="flex items-center gap-2">
-          <button onclick="changeDate(-1)" class="p-2 rounded-lg glass-pill text-gray-300 hover:text-white transition">
+          <button onclick="changeDate(-1)" class="p-2 rounded-lg lusion-pill text-slate-300 hover:text-white transition">
             <i data-lucide="chevron-left" class="w-4 h-4"></i>
           </button>
-          <div class="px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-medium font-mono-nums text-gray-200" id="currentDateDisplay">
+          <div class="px-3 py-1.5 rounded-lg bg-black/50 border border-white/10 text-xs font-medium font-mono-nums text-slate-200" id="currentDateDisplay">
             Today
           </div>
-          <button onclick="changeDate(1)" class="p-2 rounded-lg glass-pill text-gray-300 hover:text-white transition">
+          <button onclick="changeDate(1)" class="p-2 rounded-lg lusion-pill text-slate-300 hover:text-white transition">
             <i data-lucide="chevron-right" class="w-4 h-4"></i>
           </button>
           <button onclick="goToToday()" class="text-xs px-2.5 py-1.5 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/50 transition">
@@ -416,35 +517,35 @@
       </div>
 
       <!-- Daily Progress Summary Bar -->
-      <div class="glass-card p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="lusion-card p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div class="flex items-center gap-3 w-full sm:w-auto">
           <div class="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
             <i data-lucide="check-check" class="w-5 h-5"></i>
           </div>
           <div>
-            <span class="text-xs text-gray-400 block">Today's Discipline Completion</span>
+            <span class="text-xs text-slate-400 block font-mono">Today's Discipline Completion</span>
             <span id="dailyCompletionRatio" class="text-sm font-bold text-white font-mono-nums">3 of 5 completed (60%)</span>
           </div>
         </div>
 
-        <div class="w-full sm:w-64 h-2.5 bg-gray-800 rounded-full overflow-hidden">
+        <div class="w-full sm:w-64 h-2.5 bg-slate-900 rounded-full overflow-hidden">
           <div id="dailyProgressBar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 60%;"></div>
         </div>
       </div>
 
       <!-- Add New Task Input Bar -->
-      <form onsubmit="handleAddTask(event)" class="glass-panel p-3 rounded-xl border border-white/10 flex items-center gap-2">
+      <form onsubmit="handleAddTask(event)" class="lusion-panel p-3 rounded-xl border border-white/10 flex items-center gap-2">
         <input 
           type="text" 
           id="newTaskInput" 
-          placeholder="Add a new daily tick or habit (e.g., 'Saved ₹200 skipping coffee', 'Read 20 mins')..." 
-          class="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 outline-none focus:ring-0"
+          placeholder="Add a new daily tick (e.g., 'Saved ₹300 skipping takeout', 'Worked 1hr on freelance')..." 
+          class="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder-slate-500 outline-none"
           required
         >
-        <select id="newTaskCategory" class="hidden sm:block bg-black/40 text-xs text-gray-300 rounded-lg px-2.5 py-2 border border-white/10 outline-none">
+        <select id="newTaskCategory" class="hidden sm:block bg-black/50 text-xs text-slate-300 rounded-lg px-2.5 py-2 border border-white/10 outline-none">
           <option value="saving">💰 Money Save</option>
           <option value="habit">⚡ Habit</option>
-          <option value="research">🔍 Research / Work</option>
+          <option value="work">💻 Work / Skills</option>
           <option value="todo">📝 General Todo</option>
         </select>
         <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 transition active:scale-95 shadow-md shadow-indigo-600/30">
@@ -455,137 +556,58 @@
 
       <!-- The Daily Tick Checklist ("Tick Thing") -->
       <div class="space-y-3" id="taskListContainer">
-        <!-- Dynamically rendered tasks with animated checkboxes -->
-      </div>
-
-      <!-- Daily Motivation Card -->
-      <div class="p-4 rounded-xl bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-black/40 border border-indigo-500/20 flex items-start gap-3">
-        <div class="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 mt-0.5">
-          <i data-lucide="lightbulb" class="w-4 h-4"></i>
-        </div>
-        <div class="text-xs space-y-1">
-          <span class="font-semibold text-indigo-200 block">Psychology Tip for Big Purchases</span>
-          <p class="text-gray-400">
-            Waiting 30 days before buying the iPhone or MacBook eliminates 70% of impulse regrets. Meanwhile, saving daily gives you the freedom to choose without guilt!
-          </p>
-        </div>
+        <!-- Rendered dynamically per active profile -->
       </div>
 
     </div>
 
     <!-- ========================================== -->
-    <!-- TAB 3: THE DECISION BATTLE & COMPARISON   -->
+    <!-- TAB 3: SQUAD RACE (LEADERBOARD)           -->
     <!-- ========================================== -->
-    <div id="tab-battle" class="tab-pane hidden space-y-6">
+    <div id="tab-squad" class="tab-pane hidden space-y-6">
 
-      <div class="glass-panel p-6 rounded-2xl border border-white/10">
-        <h2 class="text-2xl font-extrabold text-white">The Big Dilemma: Which Should You Pick?</h2>
-        <p class="text-sm text-gray-400 mt-1">
-          Can't decide between the iPhone, MacBook Pro, or Goa trip? Compare side-by-side ROI, happiness, and lifespan!
-        </p>
-
-        <!-- Interactive Comparison Matrix -->
-        <div class="mt-6 overflow-x-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
-            <thead>
-              <tr class="border-b border-white/10 text-gray-400">
-                <th class="py-3 px-3">Criteria</th>
-                <th class="py-3 px-3 text-purple-300 font-bold">📱 iPhone Newest Pro</th>
-                <th class="py-3 px-3 text-sky-300 font-bold">💻 MacBook Pro</th>
-                <th class="py-3 px-3 text-emerald-300 font-bold">🏖️ Trip to Goa</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5 text-gray-300">
-              <tr>
-                <td class="py-3.5 px-3 font-semibold text-white">Typical Cost</td>
-                <td class="py-3.5 px-3 font-mono-nums text-purple-400">₹1,20,000 - ₹1,45,000</td>
-                <td class="py-3.5 px-3 font-mono-nums text-sky-400">₹1,60,000 - ₹2,10,000</td>
-                <td class="py-3.5 px-3 font-mono-nums text-emerald-400">₹25,000 - ₹45,000</td>
-              </tr>
-              <tr>
-                <td class="py-3.5 px-3 font-semibold text-white">Value Proposition</td>
-                <td class="py-3.5 px-3">Daily status, camera, 24/7 screen companion</td>
-                <td class="py-3.5 px-3">Coding, earning money, learning skills, work beast</td>
-                <td class="py-3.5 px-3">Core life memories, stories, mental relaxation</td>
-              </tr>
-              <tr>
-                <td class="py-3.5 px-3 font-semibold text-white">Useful Lifespan</td>
-                <td class="py-3.5 px-3">2 - 4 Years (Battery / annual FOMO)</td>
-                <td class="py-3.5 px-3">5 - 7 Years (Apple Silicon lasts forever)</td>
-                <td class="py-3.5 px-3">Lifetime memories (Trip is 4-7 days)</td>
-              </tr>
-              <tr>
-                <td class="py-3.5 px-3 font-semibold text-white">ROI / Earning Impact</td>
-                <td class="py-3.5 px-3">Low (unless you are a content creator)</td>
-                <td class="py-3.5 px-3 text-emerald-400 font-bold">Extreme High (Pays for itself)</td>
-                <td class="py-3.5 px-3">Medium (Boosts creativity & energy)</td>
-              </tr>
-              <tr>
-                <td class="py-3.5 px-3 font-semibold text-white">Depreciation</td>
-                <td class="py-3.5 px-3">Loses ~30% value every 12 months</td>
-                <td class="py-3.5 px-3">Slow depreciation, holds high trade-in</td>
-                <td class="py-3.5 px-3">0 resale, but 100% emotional return</td>
-              </tr>
-              <tr>
-                <td class="py-3.5 px-3 font-semibold text-white">When to Choose</td>
-                <td class="py-3.5 px-3">Your current phone is cracked or sluggish</td>
-                <td class="py-3.5 px-3">You want to build projects, code, or edit</td>
-                <td class="py-3.5 px-3">You are burned out and need excitement now</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-      </div>
-
-      <!-- Quick Interactive Decision Quiz -->
-      <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-4">
-        <div class="flex items-center gap-2">
-          <i data-lucide="help-circle" class="w-5 h-5 text-indigo-400"></i>
-          <h3 class="font-bold text-lg text-white">Instant Recommendation Quiz</h3>
-        </div>
-        <p class="text-xs text-gray-400">Answer 3 fast questions to find out which one you should unlock first:</p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-          <button onclick="runQuizRecommendation('work')" class="p-4 rounded-xl bg-white/[0.04] border border-white/10 hover:border-indigo-400/50 text-left transition space-y-1 group">
-            <span class="text-sm font-bold text-white group-hover:text-indigo-300 block">💼 "I want to make more money & skills"</span>
-            <span class="text-xs text-gray-400 block">Prioritizes MacBook Pro</span>
-          </button>
-          <button onclick="runQuizRecommendation('burnout')" class="p-4 rounded-xl bg-white/[0.04] border border-white/10 hover:border-emerald-400/50 text-left transition space-y-1 group">
-            <span class="text-sm font-bold text-white group-hover:text-emerald-300 block">🌴 "I'm exhausted and need a break"</span>
-            <span class="text-xs text-gray-400 block">Prioritizes Goa Trip</span>
-          </button>
-          <button onclick="runQuizRecommendation('phone')" class="p-4 rounded-xl bg-white/[0.04] border border-white/10 hover:border-purple-400/50 text-left transition space-y-1 group">
-            <span class="text-sm font-bold text-white group-hover:text-purple-300 block">📸 "My current phone is ancient"</span>
-            <span class="text-xs text-gray-400 block">Prioritizes iPhone</span>
+      <div class="lusion-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-mono uppercase tracking-widest text-indigo-400 block">SQUAD BATTLE // MISSION 80K</span>
+            <h2 class="text-2xl sm:text-3xl font-black font-display text-white">The Race to ₹80,000</h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">
+              Who will hit ₹80,000 first? Real-time comparison between Kinnan, Madhav, and Allen Joy.
+            </p>
+          </div>
+          <button onclick="openProfileGate()" class="px-4 py-2 rounded-xl lusion-pill text-xs font-semibold text-slate-200 hover:text-white transition flex items-center gap-2">
+            <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i>
+            <span>Switch Active Operative</span>
           </button>
         </div>
 
-        <div id="quizResultBox" class="hidden p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-xs text-gray-200">
-          <!-- Quiz Result dynamically rendered -->
+        <!-- Squad Leaderboard Cards -->
+        <div class="space-y-4 pt-4" id="squadLeaderboardList">
+          <!-- Dynamically populated with Kinnan, Madhav, Allen Joy -->
         </div>
+
       </div>
 
     </div>
 
     <!-- ========================================== -->
-    <!-- TAB 4: GOA & GEAR BLUEPRINTS               -->
+    <!-- TAB 4: GEAR & GOA BLUEPRINTS               -->
     <!-- ========================================== -->
-    <div id="tab-blueprints" class="tab-pane hidden space-y-6">
+    <div id="tab-specs" class="tab-pane hidden space-y-6">
       
-      <!-- Goa Trip Planner Breakdown -->
-      <div class="glass-panel p-6 rounded-2xl border border-emerald-500/20">
+      <!-- Goa Trip Breakdown -->
+      <div class="lusion-panel p-6 rounded-2xl border border-emerald-500/20">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-xl">
               🏖️
             </div>
             <div>
-              <h3 class="text-lg font-bold text-white">Goa Trip Estimated Budget Breakdown</h3>
-              <p class="text-xs text-gray-400">Total estimated budget: ₹35,000 for 5 days / 4 nights</p>
+              <h3 class="text-lg font-bold text-white font-display">Goa Trip Budget Breakdown</h3>
+              <p class="text-xs text-slate-400">Total estimated: ₹35,000 - ₹40,000 for 5 days / 4 nights</p>
             </div>
           </div>
-          <button onclick="copyGoaPackingList()" class="text-xs px-3 py-1.5 rounded-lg glass-pill text-emerald-300 hover:text-emerald-200 transition flex items-center gap-1.5">
+          <button onclick="copyGoaPackingList()" class="text-xs px-3 py-1.5 rounded-lg lusion-pill text-emerald-300 hover:text-emerald-200 transition flex items-center gap-1.5">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
             <span>Copy Checklist</span>
           </button>
@@ -593,57 +615,48 @@
 
         <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div class="p-3 rounded-xl bg-black/40 border border-white/5">
-            <span class="text-gray-400 block">✈️ Flights / Train</span>
-            <span class="font-bold text-white font-mono-nums">₹9,000 - ₹12,000</span>
+            <span class="text-slate-400 block font-mono">✈️ Flights / Train</span>
+            <span class="font-bold text-white font-mono-nums">₹10,000 - ₹12,000</span>
           </div>
           <div class="p-3 rounded-xl bg-black/40 border border-white/5">
-            <span class="text-gray-400 block">🏨 Stay (Resort / Hostel)</span>
-            <span class="font-bold text-white font-mono-nums">₹10,000 - ₹14,000</span>
+            <span class="text-slate-400 block font-mono">🏨 Resort / Stay</span>
+            <span class="font-bold text-white font-mono-nums">₹12,000 - ₹15,000</span>
           </div>
           <div class="p-3 rounded-xl bg-black/40 border border-white/5">
-            <span class="text-gray-400 block">🛵 Scooty Rental + Petrol</span>
+            <span class="text-slate-400 block font-mono">🛵 Scooty Rental</span>
             <span class="font-bold text-white font-mono-nums">₹3,000</span>
           </div>
           <div class="p-3 rounded-xl bg-black/40 border border-white/5">
-            <span class="text-gray-400 block">🍹 Food, Shacks & Fun</span>
-            <span class="font-bold text-white font-mono-nums">₹8,000 - ₹12,000</span>
-          </div>
-        </div>
-
-        <div class="mt-4 pt-4 border-t border-white/5">
-          <h4 class="text-xs font-bold text-gray-300 mb-2 uppercase tracking-wider">Top Goa Recommendations:</h4>
-          <div class="flex flex-wrap gap-2 text-xs">
-            <span class="px-2.5 py-1 rounded-lg bg-white/5 text-gray-300">🌴 South Goa (Palolem / Agonda) for quiet peaceful vibes</span>
-            <span class="px-2.5 py-1 rounded-lg bg-white/5 text-gray-300">🎉 North Goa (Anjuna / Vagator) for party & cafes</span>
-            <span class="px-2.5 py-1 rounded-lg bg-white/5 text-gray-300">🛵 Rent Activa / Fascino at Thivim or Dabolim</span>
+            <span class="text-slate-400 block font-mono">🍹 Food & Cafes</span>
+            <span class="font-bold text-white font-mono-nums">₹10,000</span>
           </div>
         </div>
       </div>
 
-      <!-- iPhone & MacBook Specs Guidance -->
+      <!-- iPhone & MacBook Tech Specs -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         
-        <div class="glass-card p-5 rounded-2xl border border-purple-500/20 space-y-3">
+        <div class="lusion-card p-5 rounded-2xl border border-purple-500/20 space-y-3">
           <div class="flex items-center gap-2">
             <span class="text-xl">📱</span>
-            <h4 class="font-bold text-base text-white">iPhone Buying Guide</h4>
+            <h4 class="font-bold text-base text-white font-display">iPhone Buying Strategy</h4>
           </div>
-          <ul class="text-xs text-gray-300 space-y-2 list-disc list-inside">
-            <li><strong>Base vs Pro:</strong> Get the Pro if you want 120Hz ProMotion screen and 5x optical zoom.</li>
-            <li><strong>Storage:</strong> Don't buy 128GB if you take 4K video. 256GB is the sweet spot.</li>
-            <li><strong>Savings Tip:</strong> Wait for festive sales (Diwali / Amazon Great Indian Festival) for ₹10,000 - ₹15,000 bank card discounts!</li>
+          <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside font-light">
+            <li><strong>256GB is the sweet spot:</strong> 128GB fills fast with 4K ProRes photos & video.</li>
+            <li><strong>Festival Offers:</strong> Wait for Diwali or Amazon Great Indian Festival for ₹8,000 - ₹12,000 instant bank cashbacks.</li>
+            <li><strong>Apple Trade-In:</strong> Exchange your current device for up to ₹25,000 off your ₹80K mission goal.</li>
           </ul>
         </div>
 
-        <div class="glass-card p-5 rounded-2xl border border-sky-500/20 space-y-3">
+        <div class="lusion-card p-5 rounded-2xl border border-sky-500/20 space-y-3">
           <div class="flex items-center gap-2">
             <span class="text-xl">💻</span>
-            <h4 class="font-bold text-base text-white">MacBook Pro Buying Guide</h4>
+            <h4 class="font-bold text-base text-white font-display">MacBook Pro Investment Guide</h4>
           </div>
-          <ul class="text-xs text-gray-300 space-y-2 list-disc list-inside">
-            <li><strong>RAM is King:</strong> Always choose at least 16GB or 18GB/24GB Unified Memory. RAM cannot be upgraded later!</li>
-            <li><strong>M3/M4 Pro Chip:</strong> Superb for heavy development, Docker, and video editing with zero fan noise.</li>
-            <li><strong>Student Discount:</strong> Apple offers up to ₹10,000 off + free AirPods during the Back-to-School season!</li>
+          <ul class="text-xs text-slate-300 space-y-2 list-disc list-inside font-light">
+            <li><strong>Unified Memory:</strong> Get 16GB+ RAM minimum. RAM is permanently soldered to the M-series chip.</li>
+            <li><strong>High ROI:</strong> Unlike phones, a MacBook Pro will generate income through programming, design, and freelancing for 5-7 years.</li>
+            <li><strong>Student Program:</strong> Apple Education store gives ₹10,000 discount + free AirPods during promotion periods.</li>
           </ul>
         </div>
 
@@ -652,73 +665,71 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- TAB 5: VERCEL & CLOUD SYNC SETUP          -->
+    <!-- TAB 5: CLOUD SYNC & VERCEL SETTINGS        -->
     <!-- ========================================== -->
     <div id="tab-sync" class="tab-pane hidden space-y-6">
 
-      <!-- Sync Status Overview -->
-      <div class="glass-panel p-6 rounded-2xl border border-white/10 space-y-4">
+      <div class="lusion-panel p-6 sm:p-8 rounded-3xl border border-white/10 space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-2xl font-extrabold text-white">Cloud Sync & Vercel Connection</h2>
-            <p class="text-xs sm:text-sm text-gray-400 mt-1">
-              Keep your laptop and mobile phone 100% synchronized!
+            <h2 class="text-2xl font-black font-display text-white">Upstash Cloud Connection</h2>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">
+              Your 3 profiles (Kinnan, Madhav, Allen Joy) are synchronized through Upstash Redis on Vercel.
             </p>
           </div>
-          <button onclick="triggerManualSync()" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 transition">
+          <button onclick="triggerManualSync()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 transition">
             <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            <span>Sync Now</span>
+            <span>Force Sync</span>
           </button>
         </div>
 
-        <!-- 3 Seamless Sync Methods -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
           
           <!-- Method 1: QR Code -->
-          <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-3">
+          <div class="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
             <div class="flex items-center gap-2 text-indigo-300 font-bold text-sm">
               <i data-lucide="qr-code" class="w-4 h-4"></i>
-              <span>1. Scan QR Code</span>
+              <span>1. Mobile Camera Sync</span>
             </div>
-            <p class="text-xs text-gray-400">
-              Open your phone camera, scan the QR code, and open this app on mobile with all current data immediately loaded!
+            <p class="text-xs text-slate-400">
+              Scan with your phone camera to open all 3 profiles on mobile in 2 seconds.
             </p>
             <button onclick="openMobileQRModal()" class="w-full py-2 rounded-lg bg-indigo-600/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/50 transition">
-              Show Mobile QR Code
+              Show QR Code
             </button>
           </div>
 
-          <!-- Method 2: Room Sync Code -->
-          <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-3">
+          <!-- Method 2: Room Code -->
+          <div class="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
             <div class="flex items-center gap-2 text-emerald-300 font-bold text-sm">
               <i data-lucide="key" class="w-4 h-4"></i>
-              <span>2. Shared Sync Code</span>
+              <span>2. Shared Cloud Room</span>
             </div>
-            <p class="text-xs text-gray-400">
-              Enter the same 6-character room code on both your laptop and phone to link them automatically.
+            <p class="text-xs text-slate-400">
+              Room code connecting your devices to Upstash Redis:
             </p>
             <div class="flex items-center gap-2">
-              <input type="text" id="syncRoomInput" placeholder="e.g. QUEST-9821" class="w-full bg-black/40 text-xs text-white uppercase font-mono px-3 py-2 rounded-lg border border-white/10 outline-none">
+              <input type="text" id="syncRoomInput" placeholder="GOAL-2341" class="w-full bg-black/50 text-xs text-white uppercase font-mono px-3 py-2 rounded-lg border border-white/10 outline-none">
               <button onclick="saveSyncRoomCode()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition">
                 Connect
               </button>
             </div>
           </div>
 
-          <!-- Method 3: Backup & Restore -->
-          <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-3">
+          <!-- Method 3: Backup -->
+          <div class="p-4 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
             <div class="flex items-center gap-2 text-sky-300 font-bold text-sm">
               <i data-lucide="download" class="w-4 h-4"></i>
               <span>3. Backup / Export</span>
             </div>
-            <p class="text-xs text-gray-400">
-              Download your entire progress as a JSON backup or import it anytime onto any device.
+            <p class="text-xs text-slate-400">
+              Export all 3 profiles data as a JSON file or restore anytime.
             </p>
             <div class="flex items-center gap-2">
-              <button onclick="exportDataJson()" class="flex-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-medium transition">
-                Download JSON
+              <button onclick="exportDataJson()" class="flex-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-medium transition">
+                Export JSON
               </button>
-              <label class="flex-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-200 text-xs font-medium text-center cursor-pointer transition">
+              <label class="flex-1 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-medium text-center cursor-pointer transition">
                 Import
                 <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden">
               </label>
@@ -728,98 +739,84 @@
         </div>
       </div>
 
-      <!-- Newbie Guide: How to Host on Vercel -->
-      <div class="glass-card p-6 rounded-2xl border border-white/10 space-y-4">
-        <div class="flex items-center gap-2 text-white font-bold text-lg">
-          <i data-lucide="rocket" class="w-5 h-5 text-indigo-400"></i>
-          <span>How to Host on Vercel (Step-by-Step for Newbies)</span>
-        </div>
-        <ol class="text-xs sm:text-sm text-gray-300 space-y-3 list-decimal list-inside leading-relaxed">
-          <li><strong>Push to GitHub:</strong> Create a new repository on <a href="https://github.com" target="_blank" class="text-indigo-400 underline">github.com</a> (e.g. named <code>my-goal-planner</code>) and upload these project files.</li>
-          <li><strong>Open Vercel:</strong> Go to <a href="https://vercel.com" target="_blank" class="text-indigo-400 underline">vercel.com</a> and sign in with your GitHub account (100% free).</li>
-          <li><strong>Import Repository:</strong> Click <strong>"Add New... > Project"</strong>, select your GitHub repo, and click <strong>"Deploy"</strong>.</li>
-          <li><strong>Done in 30 Seconds!</strong> Vercel gives you your own public URL (e.g., <code>https://my-goal-planner.vercel.app</code>) that you can open on your phone and laptop!</li>
-          <li><strong>Optional Cloud Storage:</strong> Inside your Vercel Dashboard, go to <strong>Storage</strong> > click <strong>Vercel KV</strong> or <strong>Postgres</strong> > click "Create". It will automatically link and enable serverless cloud sync!</li>
-        </ol>
-      </div>
-
     </div>
 
   </main>
 
-  <!-- Mobile Bottom Navigation Bar (Appears on small screens) -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0b0f19]/90 backdrop-blur-lg border-t border-white/10 px-2 py-2 flex items-center justify-around mobile-safe-bottom">
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05070d]/95 backdrop-blur-xl border-t border-white/10 px-2 py-2 flex items-center justify-around mobile-nav-safe">
     <button onclick="switchTab('tracker')" id="mobile-nav-tracker" class="flex flex-col items-center gap-1 text-indigo-400 p-1 text-xs">
-      <i data-lucide="wallet" class="w-5 h-5"></i>
-      <span class="text-[10px]">Savings</span>
+      <i data-lucide="target" class="w-5 h-5"></i>
+      <span class="text-[10px]">Mission</span>
     </button>
-    <button onclick="switchTab('planner')" id="mobile-nav-planner" class="flex flex-col items-center gap-1 text-gray-400 p-1 text-xs">
+    <button onclick="switchTab('planner')" id="mobile-nav-planner" class="flex flex-col items-center gap-1 text-slate-400 p-1 text-xs">
       <i data-lucide="check-square" class="w-5 h-5"></i>
       <span class="text-[10px]">Planner</span>
     </button>
-    <button onclick="switchTab('battle')" id="mobile-nav-battle" class="flex flex-col items-center gap-1 text-gray-400 p-1 text-xs">
-      <i data-lucide="scales" class="w-5 h-5"></i>
-      <span class="text-[10px]">Battle</span>
+    <button onclick="switchTab('squad')" id="mobile-nav-squad" class="flex flex-col items-center gap-1 text-slate-400 p-1 text-xs">
+      <i data-lucide="trophy" class="w-5 h-5"></i>
+      <span class="text-[10px]">Squad</span>
     </button>
-    <button onclick="switchTab('blueprints')" id="mobile-nav-blueprints" class="flex flex-col items-center gap-1 text-gray-400 p-1 text-xs">
-      <i data-lucide="compass" class="w-5 h-5"></i>
-      <span class="text-[10px]">Goa/Specs</span>
+    <button onclick="openProfileGate()" class="flex flex-col items-center gap-1 text-slate-400 p-1 text-xs">
+      <i data-lucide="users" class="w-5 h-5"></i>
+      <span class="text-[10px]">Switch</span>
     </button>
-    <button onclick="switchTab('sync')" id="mobile-nav-sync" class="flex flex-col items-center gap-1 text-gray-400 p-1 text-xs">
+    <button onclick="switchTab('sync')" id="mobile-nav-sync" class="flex flex-col items-center gap-1 text-slate-400 p-1 text-xs">
       <i data-lucide="cloud" class="w-5 h-5"></i>
       <span class="text-[10px]">Sync</span>
     </button>
   </nav>
 
-  <!-- ========================================== -->
-  <!-- MODAL 1: ADD SAVINGS / DEPOSIT MODAL      -->
-  <!-- ========================================== -->
-  <div id="depositModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-white/10 space-y-4 shadow-2xl relative">
+  <!-- ================================================================= -->
+  <!-- MODALS                                                            -->
+  <!-- ================================================================= -->
+
+  <!-- Modal 1: Log Savings -->
+  <div id="depositModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="lusion-panel w-full max-w-md rounded-3xl p-6 border border-white/10 space-y-4 shadow-2xl relative">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+        <h3 class="text-lg font-bold font-display text-white flex items-center gap-2">
           <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-400"></i>
-          <span>Log Savings Amount</span>
+          <span>Log Savings for <span id="depositModalProfile">Kinnan</span></span>
         </h3>
-        <button onclick="closeDepositModal()" class="text-gray-400 hover:text-white">
+        <button onclick="closeDepositModal()" class="text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- Quick Add Buttons -->
       <div class="grid grid-cols-4 gap-2">
-        <button onclick="quickAddAmount(200)" class="py-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono font-semibold text-gray-200 hover:text-emerald-300 border border-white/5 transition">+200</button>
-        <button onclick="quickAddAmount(500)" class="py-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono font-semibold text-gray-200 hover:text-emerald-300 border border-white/5 transition">+500</button>
-        <button onclick="quickAddAmount(1000)" class="py-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono font-semibold text-gray-200 hover:text-emerald-300 border border-white/5 transition">+1,000</button>
-        <button onclick="quickAddAmount(5000)" class="py-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono font-semibold text-gray-200 hover:text-emerald-300 border border-white/5 transition">+5,000</button>
+        <button onclick="quickAddAmount(200)" class="py-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono font-semibold text-slate-200 hover:text-emerald-300 border border-white/5 transition">+200</button>
+        <button onclick="quickAddAmount(500)" class="py-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono font-semibold text-slate-200 hover:text-emerald-300 border border-white/5 transition">+500</button>
+        <button onclick="quickAddAmount(1000)" class="py-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono font-semibold text-slate-200 hover:text-emerald-300 border border-white/5 transition">+1,000</button>
+        <button onclick="quickAddAmount(5000)" class="py-2 rounded-xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono font-semibold text-slate-200 hover:text-emerald-300 border border-white/5 transition">+5,000</button>
       </div>
 
       <form onsubmit="handleDepositSubmit(event)" class="space-y-4">
         <div>
-          <label class="text-xs text-gray-400 block mb-1">Amount to Add (<span class="currency-symbol">₹</span>)</label>
+          <label class="text-xs font-mono text-slate-400 block mb-1">Amount (<span class="currency-symbol">₹</span>)</label>
           <input 
             type="number" 
             id="depositAmountInput" 
             placeholder="e.g. 500" 
             min="1" 
             step="any"
-            class="w-full bg-black/50 text-xl font-bold font-mono text-emerald-400 px-4 py-3 rounded-xl border border-white/10 outline-none focus:border-emerald-500"
+            class="w-full bg-black/60 text-xl font-bold font-mono text-emerald-400 px-4 py-3 rounded-xl border border-white/10 outline-none focus:border-emerald-500"
             required
           >
         </div>
 
         <div>
-          <label class="text-xs text-gray-400 block mb-1">Note (Optional)</label>
+          <label class="text-xs font-mono text-slate-400 block mb-1">Note (Optional)</label>
           <input 
             type="text" 
             id="depositNoteInput" 
-            placeholder="e.g., 'Skipped Swiggy takeout', 'Freelance payment'" 
-            class="w-full bg-black/50 text-sm text-gray-200 px-3 py-2.5 rounded-xl border border-white/10 outline-none focus:border-indigo-500"
+            placeholder="e.g., 'Skipped food delivery', 'Freelance project'" 
+            class="w-full bg-black/60 text-sm text-slate-200 px-3 py-2.5 rounded-xl border border-white/10 outline-none"
           >
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2">
-          <button type="button" onclick="closeDepositModal()" class="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-white">
+          <button type="button" onclick="closeDepositModal()" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white">
             Cancel
           </button>
           <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-xs transition active:scale-95 shadow-lg shadow-emerald-500/30">
@@ -830,12 +827,10 @@
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MODAL 2: MOBILE QR SYNC MODAL             -->
-  <!-- ========================================== -->
-  <div id="mobileQRModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-sm rounded-2xl p-6 border border-white/10 space-y-4 shadow-2xl relative text-center">
-      <button onclick="closeMobileQRModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+  <!-- Modal 2: Mobile QR -->
+  <div id="mobileQRModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="lusion-panel w-full max-w-sm rounded-3xl p-6 border border-white/10 space-y-4 shadow-2xl relative text-center">
+      <button onclick="closeMobileQRModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
@@ -844,68 +839,55 @@
       </div>
 
       <div>
-        <h3 class="text-lg font-bold text-white">Scan with Phone Camera</h3>
-        <p class="text-xs text-gray-400 mt-1">
-          Instantly opens this planner on your mobile browser with your current progress intact!
+        <h3 class="text-lg font-bold font-display text-white">Scan with Mobile Camera</h3>
+        <p class="text-xs text-slate-400 mt-1">
+          Instantly opens Kinnan, Madhav, and Allen Joy's synced progress on your phone!
         </p>
       </div>
 
-      <!-- QR Canvas -->
-      <div class="p-3 bg-white rounded-xl inline-block shadow-inner mx-auto">
+      <div class="p-3 bg-white rounded-2xl inline-block shadow-inner mx-auto">
         <canvas id="qrCanvas" class="w-48 h-48 block"></canvas>
       </div>
 
       <div class="space-y-2">
-        <span class="text-[11px] text-gray-400 block">Or copy your direct sync link:</span>
         <button onclick="copyMobileSyncLink()" class="w-full py-2.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 text-xs font-semibold flex items-center justify-center gap-2 border border-indigo-500/40 transition">
           <i data-lucide="copy" class="w-4 h-4"></i>
-          <span id="copyLinkBtnText">Copy Shareable Link</span>
+          <span id="copyLinkBtnText">Copy Shareable Mobile Link</span>
         </button>
       </div>
-
-      <p class="text-[10px] text-gray-400">
-        Tip: On iPhone Safari, tap <strong>Share > Add to Home Screen</strong> to use it like a native mobile app!
-      </p>
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MODAL 3: GOAL SETTINGS / EDIT TARGET       -->
-  <!-- ========================================== -->
-  <div id="goalSettingsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-md rounded-2xl p-6 border border-white/10 space-y-4 shadow-2xl relative">
+  <!-- Modal 3: Customize Target Amount & Deadline -->
+  <div id="goalSettingsModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="lusion-panel w-full max-w-md rounded-3xl p-6 border border-white/10 space-y-4 shadow-2xl relative">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+        <h3 class="text-lg font-bold font-display text-white flex items-center gap-2">
           <i data-lucide="sliders" class="w-5 h-5 text-indigo-400"></i>
-          <span>Customize Goal Target</span>
+          <span>Customize Mission 80K Settings</span>
         </h3>
-        <button onclick="closeGoalSettingsModal()" class="text-gray-400 hover:text-white">
+        <button onclick="closeGoalSettingsModal()" class="text-slate-400 hover:text-white">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <form onsubmit="handleSaveGoalSettings(event)" class="space-y-4">
         <div>
-          <label class="text-xs text-gray-400 block mb-1">Goal Name</label>
-          <input type="text" id="editGoalTitleInput" class="w-full bg-black/50 text-sm text-white px-3 py-2.5 rounded-xl border border-white/10 outline-none" required>
-        </div>
-
-        <div>
-          <label class="text-xs text-gray-400 block mb-1">Target Price / Budget (<span class="currency-symbol">₹</span>)</label>
+          <label class="text-xs font-mono text-slate-400 block mb-1">Target Mission Amount (<span class="currency-symbol">₹</span>)</label>
           <input type="number" id="editGoalTargetInput" min="100" class="w-full bg-black/50 text-base font-bold font-mono text-emerald-400 px-3 py-2.5 rounded-xl border border-white/10 outline-none" required>
         </div>
 
         <div>
-          <label class="text-xs text-gray-400 block mb-1">Target Deadline</label>
-          <input type="date" id="editGoalDeadlineInput" class="w-full bg-black/50 text-sm text-gray-200 px-3 py-2.5 rounded-xl border border-white/10 outline-none">
+          <label class="text-xs font-mono text-slate-400 block mb-1">Target Completion Date</label>
+          <input type="date" id="editGoalDeadlineInput" class="w-full bg-black/50 text-sm text-slate-200 px-3 py-2.5 rounded-xl border border-white/10 outline-none">
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2">
-          <button type="button" onclick="closeGoalSettingsModal()" class="px-4 py-2 rounded-xl text-xs text-gray-400 hover:text-white">
+          <button type="button" onclick="closeGoalSettingsModal()" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white">
             Cancel
           </button>
           <button type="submit" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition">
-            Save Changes
+            Save Settings
           </button>
         </div>
       </form>
